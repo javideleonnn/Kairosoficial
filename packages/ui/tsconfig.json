@@ -1,0 +1,5 @@
+{
+  "extends": "@kairos/config/tsconfig.base.json",
+  "compilerOptions": { "baseUrl": ".", "jsx": "react-jsx" },
+  "include": ["src"]
+}

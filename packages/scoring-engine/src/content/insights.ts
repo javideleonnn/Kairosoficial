@@ -1,0 +1,19 @@
+import type { BlockKey } from "./types";
+
+/** Se usa con el bloqueo de MENOR puntaje. */
+export const STRENGTH_BY_BLOCK: Record<BlockKey, string> = {
+  FD: "Tienes una dirección más clara que la mayoría — sabes hacia dónde vas.",
+  IDE: "Tu identidad es estable — sabes quién eres independientemente del entorno.",
+  DM: "Tu constancia no depende del estado de ánimo del día — eso es raro.",
+  AS: "No te saboteas cuando las cosas van bien — sostienes tu propio avance.",
+  VE: "No dependes de la aprobación externa para sostener tu esfuerzo.",
+};
+
+/** Se usa con el bloqueo DOMINANTE — versión condensada de "qué ocurre si no cambia". */
+export const RISK_BY_BLOCK: Record<BlockKey, string> = {
+  FD: "Seguirás acumulando esfuerzo disperso que nunca suma en una sola dirección.",
+  IDE: "Seguirás logrando cosas que se sienten ajenas, sin conectar con quién realmente eres.",
+  DM: "La brecha entre tu potencial real y tus resultados seguirá creciendo.",
+  AS: "Seguirás repitiendo el ciclo de avance-freno, cada vez con más desgaste.",
+  VE: "Seguirás construyendo una vida optimizada para la aprobación de otros, no para ti.",
+};

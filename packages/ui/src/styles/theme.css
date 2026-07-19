@@ -1,0 +1,58 @@
+/**
+ * Tokens de marca de Kairos — fuente única de verdad de color, tipografía
+ * y movimiento, compartida entre apps/mapa y apps/crm.
+ *
+ * Tailwind v4 no usa tailwind.config.js — los tokens se declaran en CSS con
+ * @theme, y Tailwind genera automáticamente las utilidades correspondientes
+ * según el prefijo (--color-* → bg-/text-/border-*, --font-* → font-*,
+ * --ease-* → ease-*, etc). Ver decisión del Módulo 2.
+ */
+/**
+ * Tokens de marca de Kairos — fuente única de verdad de color, tipografía
+ * y movimiento, compartida entre apps/mapa y apps/crm.
+ *
+ * Tailwind v4 no usa tailwind.config.js — los tokens se declaran en CSS con
+ * @theme, y Tailwind genera automáticamente las utilidades correspondientes
+ * según el prefijo (--color-* → bg-/text-/border-*, --font-* → font-*,
+ * --ease-* → ease-*, etc). Ver decisión del Módulo 2.
+ *
+ * @source es necesario porque la auto-detección de contenido de Tailwind v4
+ * no escanea paquetes fuera del árbol de la app que importa este archivo
+ * (problema conocido en monorepos, tailwindlabs/tailwindcss#13136). Se
+ * declara aquí, relativo a este archivo, para no repetirlo en cada app.
+ */
+@source "../components";
+
+@theme {
+  /* Color — negro casi puro (no negro absoluto, es más suave visualmente),
+     cream para texto principal, dorado como único acento de estado. */
+  --color-background: #0a0a0a;
+  --color-foreground: #f5f0e8;
+  --color-accent: #c8a96e;
+
+  /* Tipografía — fuentes de sistema, sin carga de web fonts (Georgia y
+     Arial ya son la identidad establecida de la marca, no un placeholder). */
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-sans: Arial, Helvetica, sans-serif;
+
+  /* Movimiento — la curva de easing usada en toda transición de pantalla
+     completa (ver documento de experiencia: "salida rápida, llegada suave"). */
+  --ease-kairos: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

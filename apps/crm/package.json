@@ -1,0 +1,35 @@
+{
+  "name": "@kairos/crm",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings 0",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.1.0",
+    "@kairos/database": "workspace:*",
+    "@kairos/scoring-engine": "workspace:*",
+    "@kairos/types": "workspace:*",
+    "@kairos/ui": "workspace:*",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.0",
+    "next": "16.2.10",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@kairos/config": "workspace:*",
+    "@tailwindcss/postcss": "^4.3.2",
+    "@types/node": "^22.9.0",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.2",
+    "eslint": "^9.15.0",
+    "eslint-config-next": "16.2.10",
+    "tailwindcss": "^4.3.2",
+    "typescript": "^5.6.3"
+  }
+}
