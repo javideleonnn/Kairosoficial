@@ -1,6 +1,7 @@
 "use client";
 
-import { Screen, Button } from "@kairos/ui";
+import { useEffect, useRef } from "react";
+import { Screen } from "@kairos/ui";
 import type { StaticQuestion } from "@kairos/scoring-engine";
 import type { DraftAnswer } from "@/lib/diagnostic/flow";
 import { isAnswerComplete } from "@/lib/diagnostic/flow";
@@ -15,6 +16,16 @@ interface QuestionScreenProps {
   onContinue: () => void;
 }
 
+// Palabra discreta sobre la pregunta — copy provisional (ver rediseño).
+const EYEBROW = "Reflexiona";
+
+// Cuánto permanece visible la selección antes de avanzar sola.
+const AUTO_ADVANCE_DELAY_MS = 300;
+
+// Duración de la transición entre preguntas — ajustada de 400ms a 250ms
+// para que se sienta casi imperceptible, no una animación "vista".
+const TRANSITION_DURATION_MS = 250;
+
 export function QuestionScreen({
   question,
   answer,
@@ -22,11 +33,35 @@ export function QuestionScreen({
   onContinue,
 }: QuestionScreenProps): React.JSX.Element {
   const complete = isAnswerComplete(question, answer);
+  const onContinueRef = useRef(onContinue);
+  onContinueRef.current = onContinue;
+
+  const answerKey = JSON.stringify(answer);
+  useEffect(() => {
+    if (!complete) return;
+    const timer = setTimeout(() => onContinueRef.current(), AUTO_ADVANCE_DELAY_MS);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [complete, answerKey]);
 
   return (
-    <Screen className="px-6 py-16">
-      <div className="w-full max-w-sm">
-        <p className="mb-6 font-serif text-xl leading-snug">{question.prompt}</p>
+    <Screen className="px-6 pb-16 pt-28">
+      {/* Fondo — apenas perceptible, no debe notarse como "diseño" */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-1/2 top-1/4 h-96 w-96 -translate-x-1/2 rounded-full bg-accent/[0.05] blur-[130px]" />
+      </div>
+
+      <div
+        key={question.id}
+        style={{ animation: `fade-in-slide ${TRANSITION_DURATION_MS}ms var(--ease-kairos) forwards` }}
+        className="w-full max-w-sm"
+      >
+        <p className="mb-5 text-[11px] uppercase tracking-[0.2em] text-foreground/25">
+          {EYEBROW}
+        </p>
+        <p className="mb-16 font-serif text-[28px] leading-[1.25] tracking-tight sm:text-4xl">
+          {question.prompt}
+        </p>
 
         {question.format === "scale" ? (
           <ScaleQuestion
@@ -50,16 +85,6 @@ export function QuestionScreen({
             }
           />
         )}
-
-        <div
-          className={`mt-8 flex justify-center transition-opacity duration-300 ease-kairos ${
-            complete ? "opacity-100" : "pointer-events-none opacity-0"
-          }`}
-        >
-          <Button onClick={onContinue} disabled={!complete}>
-            Continuar
-          </Button>
-        </div>
       </div>
     </Screen>
   );

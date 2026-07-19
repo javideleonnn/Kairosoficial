@@ -922,19 +922,72 @@ curl -sI http://localhost:PORT/ | grep -i "x-frame\|x-content-type"     # cabece
 
 ---
 
+## Revisión de metodología — Cuestionario reducido a 12 preguntas
+
+**Contexto:** después de aprobar el rediseño visual completo (intro,
+preguntas, resultado), se hizo una auditoría UX crítica del recorrido
+completo, y por separado, una revisión profunda de la metodología misma
+antes de solo "recortar" el cuestionario de 20 a un número menor.
+
+**Qué se construyó:**
+1. **Mapa conceptual**: 20 manifestaciones documentadas (4 por bloqueo) +
+   3 pares de "conducta idéntica, causa distinta" identificados
+   explícitamente (dificultad para poner límites: IDE vs VE; acción
+   inconsistente: FD vs DM; abandona lo empezado: FD vs AS).
+2. **Nuevo cuestionario de 12 preguntas** (`content/questions.ts`,
+   reescrito completo, no recortado) — diseñado desde el mapa conceptual,
+   no desde las 20 preguntas originales. 3 preguntas de escenario (Q3, Q4,
+   Q5) existen específicamente para forzar la distinción entre cada par
+   de confusión encontrado.
+3. **2 transiciones** en vez de 3 (`content/transitions.ts`) — un
+   recorrido de ~3 minutos no necesita el mismo número de pausas que uno
+   de 5.
+4. **Motor actualizado**: `CLOSING_QUESTION_ID` de `"q20"` → `"q12"`
+   (dependencia estructural real del desempate, no cosmética).
+5. **Niveles recalibrados** con el mismo método de optimización exhaustiva
+   del Módulo 7 — rango teórico real ahora **50.33–69.43** (antes
+   54.11–76.75 para 20 preguntas). Las 5 bandas se redistribuyeron en
+   partes iguales sobre ese nuevo rango real.
+6. **Suite de tests reescrita completa** — 24 pruebas (antes 20),
+   incluyendo 4 nuevas de integridad de contenido específicas de este
+   cuestionario (12 preguntas exactas, 2 transiciones, la de cierre tiene
+   una opción por cada uno de los 5 bloqueos).
+7. Corregidos los textos hardcodeados en `IntroScreen` ("20 preguntas" →
+   "12 preguntas", "5 minutos" → "3 minutos" — mismo principio de nunca
+   prometer un número que no es real, aplicado ya una vez en el Módulo 6).
+
+**Decisión tomada:** el balance de cobertura por bloqueo mejoró
+sustancialmente (antes FD aparecía en 16 de 20 preguntas y AS/IDE/DM nunca
+tenían pregunta de escala; ahora la distribución es mucho más pareja),
+como efecto directo de diseñar desde el mapa conceptual en vez de recortar
+lo existente.
+
+**Cómo se validó (mismo rigor que siempre):**
+```bash
+pnpm type-check && pnpm build && pnpm test   # 7/7, ambas apps, 24/24 tests
+```
+Validación adicional:
+- Rango teórico exacto recalculado por optimización exhaustiva (no
+  estimado) contra las 12 preguntas reales.
+- 4 perfiles representativos calibrados contra el motor real antes de
+  fijar las aserciones de los tests (mismo método que el Módulo 7).
+- Prueba de lógica del flujo (patrón del Módulo 6): 14 pasos (12
+  preguntas + 2 transiciones), recorrido completo simulado de principio a
+  fin sin errores.
+
+**Pendientes (documentados, no bloquean nada):**
+- Identidad Débil quedó como el bloqueo con menor cobertura relativa (6
+  manifestaciones cubiertas de forma directa, sin pregunta de escenario
+  dedicada) — anotado en la propuesta, no resuelto todavía.
+- Los hallazgos #1, #3 y #5 de la auditoría UX (pantalla de "Guardando"
+  poco premium, pérdida del 100% de progreso, falta de retroalimentación
+  táctil) siguen pendientes de implementación — el hallazgo #1 fue
+  acordado como próxima prioridad, pero se pausó para resolver primero la
+  metodología.
+
+---
+
 ## Módulo 14 — Deploy 🔄
 
 *(pendiente, según lo acordado — se hace en una sola sesión al final,
 cuando Supabase + GitHub + Vercel estén listos)*
-
-
-
-
-
-
-
-
-
-
-
-

@@ -39,5 +39,10 @@ export interface StaticQuestion {
 export interface Transition {
   /** el id de la pregunta después de la cual aparece esta transición */
   afterQuestionId: string;
-  lines: string[];
+  /**
+   * Mensaje único, breve, no interrumpe la experiencia (aparece y
+   * desaparece solo). Copy provisional — pendiente de texto final
+   * (ver rediseño de la pantalla de preguntas).
+   */
+  message: string;
 }

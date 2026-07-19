@@ -8,7 +8,7 @@ import type { DraftAnswer } from "@/lib/diagnostic/flow";
 import { IntroScreen } from "./IntroScreen";
 import { TransitionScreen } from "./TransitionScreen";
 import { QuestionScreen } from "./QuestionScreen";
-import { ProgressBar } from "./ProgressBar";
+import { DiagnosticHeader } from "./DiagnosticHeader";
 
 type Phase = "intro" | "flow" | "submitting" | "error";
 
@@ -115,11 +115,16 @@ export function DiagnosticFlow(): React.JSX.Element {
 
   return (
     <>
-      <ProgressBar answered={answered} total={total} />
+      <DiagnosticHeader answered={answered} total={total} />
       {currentStep.kind === "transition" ? (
-        <TransitionScreen transition={currentStep.transition} onContinue={advance} />
+        <TransitionScreen
+          key={currentStep.transition.afterQuestionId}
+          transition={currentStep.transition}
+          onContinue={advance}
+        />
       ) : (
         <QuestionScreen
+          key={currentStep.question.id}
           question={currentStep.question}
           answer={answers[currentStep.question.id]}
           onAnswerChange={(answer) =>

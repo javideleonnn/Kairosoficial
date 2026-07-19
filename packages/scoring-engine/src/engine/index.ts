@@ -9,7 +9,7 @@ import { getPatterns } from "./patterns";
 import type { AletheiaResult, EngineAnswer } from "./types";
 
 const ENGINE_VERSION = "aletheia-v1";
-const CLOSING_QUESTION_ID = "q20";
+const CLOSING_QUESTION_ID = "q12";
 
 /**
  * Punto de entrada único de Aletheia. Función pura: mismas respuestas →

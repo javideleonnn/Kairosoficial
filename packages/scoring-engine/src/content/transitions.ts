@@ -1,27 +1,17 @@
 import type { Transition } from "./types";
 
+/**
+ * Con 12 preguntas (2-3 minutos), 2 transiciones bastan — 3 en un
+ * recorrido corto se sentiría como que se interrumpe a sí mismo (ver
+ * sugerencia del rediseño de la pantalla de preguntas). Copy provisional.
+ */
 export const TRANSITIONS: Transition[] = [
   {
-    afterQuestionId: "q6",
-    lines: [
-      "Empieza a notarse un patrón.",
-      "La mayoría de personas cree que su problema es \"falta de disciplina\".",
-      "Casi nunca lo es.",
-    ],
+    afterQuestionId: "q4",
+    message: "Tu mapa empieza a tomar forma.",
   },
   {
-    afterQuestionId: "q12",
-    lines: [
-      "Tus respuestas están mostrando algo consistente.",
-      "No es un rasgo de personalidad. Es un patrón que se repite.",
-      "Vamos a confirmarlo con las últimas preguntas.",
-    ],
-  },
-  {
-    afterQuestionId: "q18",
-    lines: [
-      "Ya casi tenemos el patrón completo.",
-      "Las últimas preguntas no buscan nueva información — buscan confirmar lo que ya apareció.",
-    ],
+    afterQuestionId: "q8",
+    message: "Falta muy poco para revelar tu mapa.",
   },
 ];

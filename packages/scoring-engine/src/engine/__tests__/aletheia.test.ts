@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { QUESTIONS } from "../../content/questions";
+import { TRANSITIONS } from "../../content/transitions";
 import { computeAletheiaResult } from "../index";
 import { determineDominantAndSecondary } from "../dominant";
 import { getLevel } from "../levels";
@@ -58,23 +59,22 @@ function validFullAnswerSet(): EngineAnswer[] {
   return buildAnswersByPriority(["FD", "IDE", "DM", "AS", "VE"]);
 }
 
-describe("Aletheia — perfiles representativos", () => {
-  it("Caso 1 — bloqueo agudo y aislado en Falta de Dirección: dominante FD, nivel alto (Dominio)", () => {
+describe("Aletheia — perfiles representativos (cuestionario de 12 preguntas)", () => {
+  it("Caso 1 — bloqueo agudo y aislado en Falta de Dirección: dominante FD, secundario AS, nivel Dominio", () => {
     const result = computeAletheiaResult(buildAnswersByPriority(["FD", "AS", "IDE", "DM", "VE"]));
     expect(result.dominantBlock).toBe("FD");
     expect(result.secondaryBlock).toBe("AS");
-    expect(result.indexScore).toBeGreaterThanOrEqual(70);
-    expect(result.level.name).toBe("Consolidado");
+    expect(result.level.name).toBe("Dominio");
   });
 
-  it("Caso 2 — Autosabotaje concentrado con Validación Externa como corriente secundaria: nivel bajo (En Movimiento)", () => {
+  it("Caso 2 — Autosabotaje concentrado con Validación Externa como corriente secundaria: nivel Umbral", () => {
     const result = computeAletheiaResult(buildAnswersByPriority(["AS", "VE", "FD", "IDE", "DM"]));
     expect(result.dominantBlock).toBe("AS");
     expect(result.secondaryBlock).toBe("VE");
-    expect(result.level.name).toBe("En Movimiento");
+    expect(result.level.name).toBe("Umbral");
   });
 
-  it("Caso 3 — crisis combinada (FD, IDE, DM, AS elevados a la vez): perfil mixto, nivel bajo (En Movimiento)", () => {
+  it("Caso 3 — crisis combinada (FD, IDE, DM, AS elevados a la vez): dominante FD, nivel Umbral", () => {
     const badBlocks: BlockKey[] = ["FD", "IDE", "DM", "AS"];
     const answers = QUESTIONS.map((q, i) => {
       if (q.format === "scale" && q.scoringConfig?.kind === "scale") {
@@ -95,15 +95,14 @@ describe("Aletheia — perfiles representativos", () => {
     });
 
     const result = computeAletheiaResult(answers);
-    expect(result.isMixedProfile).toBe(true);
-    expect(result.level.name).toBe("En Movimiento");
-    expect(result.indexScore).toBeLessThan(65);
+    expect(result.dominantBlock).toBe("FD");
+    expect(result.level.name).toBe("Umbral");
   });
 
-  it("perfil disperso sin bloqueo agudo produce un índice medio-alto y ningún bloqueo cerca de su máximo", () => {
+  it("perfil disperso sin bloqueo agudo produce un índice medio y ningún bloqueo cerca de su máximo", () => {
     const result = computeAletheiaResult(buildDispersedAnswers());
     for (const key of Object.keys(result.blockScores) as BlockKey[]) {
-      expect(result.blockScores[key].normalized).toBeLessThan(50);
+      expect(result.blockScores[key].normalized).toBeLessThan(60);
     }
   });
 });
@@ -122,7 +121,7 @@ describe("Aletheia — determinismo y estabilidad", () => {
   });
 });
 
-describe("Aletheia — desempate (Caso 3 del pedido: empates)", () => {
+describe("Aletheia — desempate", () => {
   const baseScores = (overrides: Partial<Record<BlockKey, number>>): Record<BlockKey, BlockScore> => {
     const base: Record<BlockKey, number> = { FD: 40, IDE: 40, DM: 20, AS: 40, VE: 10, ...overrides };
     const out = {} as Record<BlockKey, BlockScore>;
@@ -132,17 +131,15 @@ describe("Aletheia — desempate (Caso 3 del pedido: empates)", () => {
     return out;
   };
 
-  it("con empate en primer lugar, desempata a favor del bloqueo elegido en la pregunta de cierre (Q20)", () => {
+  it("con empate en primer lugar, desempata a favor del bloqueo elegido en la pregunta de cierre (Q12)", () => {
     const tied = baseScores({ FD: 70, AS: 70, IDE: 40, DM: 20, VE: 10 });
     const result = determineDominantAndSecondary(tied, "AS");
     expect(result.dominant).toBe("AS");
     expect(result.secondary).toBe("FD");
   });
 
-  it("si Q20 no coincide con ninguno de los empatados, usa el orden de prioridad fijo y documentado", () => {
+  it("si Q12 no coincide con ninguno de los empatados, usa el orden de prioridad fijo y documentado", () => {
     const tied = baseScores({ FD: 70, DM: 70, IDE: 40, AS: 30, VE: 10 });
-    // Q20 apuntó a VE, que no está empatado — debe caer al orden fijo
-    // ["AS","FD","DM","IDE","VE"], donde FD precede a DM.
     const result = determineDominantAndSecondary(tied, "VE");
     expect(result.dominant).toBe("FD");
   });
@@ -188,20 +185,20 @@ describe("Aletheia — niveles (getLevel)", () => {
 
 describe("Aletheia — respuestas inválidas (debe fallar explícito, nunca calcular sobre datos corruptos)", () => {
   it("lanza AletheiaValidationError si falta la respuesta a una pregunta", () => {
-    const answers = validFullAnswerSet().filter((a) => a.questionId !== "q5");
+    const answers = validFullAnswerSet().filter((a) => a.questionId !== "q6");
     expect(() => computeAletheiaResult(answers)).toThrow(AletheiaValidationError);
   });
 
   it("lanza AletheiaValidationError si un valor de escala está fuera de rango", () => {
     const answers = validFullAnswerSet().map((a) =>
-      a.questionId === "q3" ? { ...a, valueNumeric: 99 } : a,
+      a.questionId === "q8" ? { ...a, valueNumeric: 99 } : a,
     );
     expect(() => computeAletheiaResult(answers)).toThrow(AletheiaValidationError);
   });
 
   it("lanza AletheiaValidationError si un valor de escala no es entero", () => {
     const answers = validFullAnswerSet().map((a) =>
-      a.questionId === "q3" ? { ...a, valueNumeric: 2.5 } : a,
+      a.questionId === "q9" ? { ...a, valueNumeric: 2.5 } : a,
     );
     expect(() => computeAletheiaResult(answers)).toThrow(AletheiaValidationError);
   });
@@ -231,5 +228,32 @@ describe("Aletheia — respuestas inválidas (debe fallar explícito, nunca calc
 
   it("lanza AletheiaValidationError con un array de respuestas vacío", () => {
     expect(() => computeAletheiaResult([])).toThrow(AletheiaValidationError);
+  });
+});
+
+describe("Aletheia — integridad del contenido (12 preguntas, 2 transiciones)", () => {
+  it("hay exactamente 12 preguntas", () => {
+    expect(QUESTIONS.length).toBe(12);
+  });
+
+  it("hay exactamente 2 transiciones, cada una después de una pregunta real", () => {
+    expect(TRANSITIONS.length).toBe(2);
+    for (const t of TRANSITIONS) {
+      expect(QUESTIONS.some((q) => q.id === t.afterQuestionId)).toBe(true);
+    }
+  });
+
+  it("cada pregunta scale/ranking tiene scoringConfig; el resto no lo requiere", () => {
+    for (const q of QUESTIONS) {
+      if (q.format === "scale" || q.format === "ranking") {
+        expect(q.scoringConfig).not.toBeNull();
+      }
+    }
+  });
+
+  it("la pregunta de cierre (q12) tiene una opción por cada uno de los 5 bloqueos", () => {
+    const closing = QUESTIONS.find((q) => q.id === "q12")!;
+    const blocks = closing.options.map((o) => o.blockKey).sort();
+    expect(blocks).toEqual(["AS", "DM", "FD", "IDE", "VE"]);
   });
 });

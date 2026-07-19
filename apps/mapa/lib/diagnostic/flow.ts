@@ -18,7 +18,7 @@ export type FlowStep =
   | { kind: "question"; question: StaticQuestion }
   | { kind: "transition"; transition: Transition };
 
-/** Intercala las 20 preguntas con las 3 transiciones de curiosidad, en el
+/** Intercala las 12 preguntas con las 2 transiciones de curiosidad, en el
  * orden correcto, a partir de `afterQuestionId`. */
 export function buildFlowSteps(): FlowStep[] {
   const sorted = [...QUESTIONS].sort((a, b) => a.order - b.order);

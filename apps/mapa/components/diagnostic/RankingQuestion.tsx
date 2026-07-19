@@ -1,3 +1,4 @@
+import { FadeInSection } from "@kairos/ui";
 import type { StaticQuestion } from "@kairos/scoring-engine";
 import { SelectionCard } from "./SelectionCard";
 
@@ -21,19 +22,20 @@ export function RankingQuestion({
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-foreground/40">
+      <p className="mb-1 text-xs text-foreground/30">
         Toca en orden, de la que MÁS se parece a ti a la que MENOS.
       </p>
-      {question.options.map((option) => {
+      {question.options.map((option, index) => {
         const rank = rankedOptionIds.indexOf(option.id);
         return (
-          <SelectionCard
-            key={option.id}
-            label={option.label}
-            selected={rank !== -1}
-            onSelect={() => handleTap(option.id)}
-            rankBadge={rank !== -1 ? rank + 1 : undefined}
-          />
+          <FadeInSection key={option.id} index={index} stepDelayMs={40}>
+            <SelectionCard
+              label={option.label}
+              selected={rank !== -1}
+              onSelect={() => handleTap(option.id)}
+              rankBadge={rank !== -1 ? rank + 1 : undefined}
+            />
+          </FadeInSection>
         );
       })}
       {!isComplete && rankedOptionIds.length > 0 ? (

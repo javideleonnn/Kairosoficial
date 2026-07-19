@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Screen, Button } from "@kairos/ui";
+import { useEffect, useRef } from "react";
+import { Screen } from "@kairos/ui";
 import type { Transition } from "@kairos/scoring-engine";
 
 interface TransitionScreenProps {
@@ -9,43 +9,30 @@ interface TransitionScreenProps {
   onContinue: () => void;
 }
 
+// Cuánto se muestra el mensaje antes de continuar solo — breve, no
+// interrumpe la experiencia, no requiere ninguna acción del usuario.
+const DISPLAY_DURATION_MS = 1800;
+
 export function TransitionScreen({
   transition,
   onContinue,
 }: TransitionScreenProps): React.JSX.Element {
-  const [visibleLines, setVisibleLines] = useState(0);
+  const onContinueRef = useRef(onContinue);
+  onContinueRef.current = onContinue;
 
   useEffect(() => {
-    setVisibleLines(0);
-    const timers = transition.lines.map((_, i) =>
-      setTimeout(() => setVisibleLines(i + 1), i * 900),
-    );
-    return () => timers.forEach(clearTimeout);
-  }, [transition]);
-
-  const allVisible = visibleLines >= transition.lines.length;
+    const timer = setTimeout(() => onContinueRef.current(), DISPLAY_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <Screen>
-      <div className="max-w-sm space-y-4 text-center">
-        {transition.lines.map((line, i) => (
-          <p
-            key={line}
-            className={`font-serif text-lg transition-opacity duration-700 ease-kairos ${
-              i < visibleLines ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            {line}
-          </p>
-        ))}
-        <div
-          className={`pt-4 transition-opacity duration-500 ease-kairos ${
-            allVisible ? "opacity-100" : "pointer-events-none opacity-0"
-          }`}
-        >
-          <Button onClick={onContinue}>Continuar</Button>
-        </div>
-      </div>
+      <p
+        style={{ animation: "fade-in-up 600ms var(--ease-kairos) forwards" }}
+        className="font-serif text-lg text-foreground/70"
+      >
+        {transition.message}
+      </p>
     </Screen>
   );
 }

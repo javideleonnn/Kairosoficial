@@ -10,7 +10,7 @@ interface ScreenProps {
 export function Screen({ children, className = "" }: ScreenProps): React.JSX.Element {
   return (
     <main
-      className={`flex min-h-screen items-center justify-center bg-background text-foreground ${className}`}
+      className={`relative flex min-h-screen items-center justify-center overflow-hidden bg-background text-foreground ${className}`}
     >
       {children}
     </main>

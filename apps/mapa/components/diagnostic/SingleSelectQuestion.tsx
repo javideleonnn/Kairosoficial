@@ -1,3 +1,4 @@
+import { FadeInSection } from "@kairos/ui";
 import type { StaticQuestion } from "@kairos/scoring-engine";
 import { SelectionCard } from "./SelectionCard";
 
@@ -14,13 +15,14 @@ export function SingleSelectQuestion({
 }: SingleSelectQuestionProps): React.JSX.Element {
   return (
     <div className="space-y-3">
-      {question.options.map((option) => (
-        <SelectionCard
-          key={option.id}
-          label={option.label}
-          selected={selectedOptionId === option.id}
-          onSelect={() => onSelect(option.id)}
-        />
+      {question.options.map((option, index) => (
+        <FadeInSection key={option.id} index={index} stepDelayMs={40}>
+          <SelectionCard
+            label={option.label}
+            selected={selectedOptionId === option.id}
+            onSelect={() => onSelect(option.id)}
+          />
+        </FadeInSection>
       ))}
     </div>
   );

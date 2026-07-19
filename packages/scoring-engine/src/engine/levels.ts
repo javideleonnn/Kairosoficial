@@ -1,25 +1,22 @@
 import type { Level } from "./types";
 
 /**
- * Umbrales calibrados ejecutando el motor contra perfiles construidos
- * deliberadamente extremos (ver __calibration.ts, no commiteado — sus
- * hallazgos quedan documentados en /docs/progress.md, Módulo 7).
+ * Umbrales calibrados por optimización exhaustiva pregunta por pregunta
+ * contra el cuestionario de 12 preguntas (v3) — no una estimación.
  *
- * HALLAZGO IMPORTANTE: el rango real de indexScore observado en los
- * perfiles más extremos posibles de construir fue ~59-76, no 0-100. Esto
- * ocurre porque cada una de las 4 dimensiones depende de solo 2-3 de los
- * 5 bloqueos — un perfil con UN bloqueo muy agudo pero los demás bajos
- * puntúa relativamente bien en las otras 3 dimensiones, comprimiendo el
- * índice hacia el centro. Las bandas de abajo reflejan ese rango real
- * (documentado como hallazgo de metodología, no oculto) para que los 5
- * niveles sean todos alcanzables en la práctica.
+ * Límite teórico exacto para este set: mínimo 50.33, máximo 69.43
+ * (amplitud real ~19.1 puntos, calculado igual que en la v1 de 20
+ * preguntas — ver hallazgo del Módulo 7 sobre por qué el rango real es
+ * mucho más angosto que 0-100: cada dimensión depende de solo 2-3 de los
+ * 5 bloqueos). Las 5 bandas de abajo dividen ese rango real en partes
+ * iguales, con los extremos abiertos (0 y 100) para cualquier caso límite.
  */
 const LEVEL_BANDS: Array<{ number: number; name: string; min: number; max: number }> = [
-  { number: 1, name: "Punto de Partida", min: 0, max: 58 },
-  { number: 2, name: "En Movimiento", min: 59, max: 64 },
-  { number: 3, name: "Umbral", min: 65, max: 70 },
-  { number: 4, name: "Consolidado", min: 71, max: 75 },
-  { number: 5, name: "Dominio", min: 76, max: 100 },
+  { number: 1, name: "Punto de Partida", min: 0, max: 54 },
+  { number: 2, name: "En Movimiento", min: 55, max: 58 },
+  { number: 3, name: "Umbral", min: 59, max: 62 },
+  { number: 4, name: "Consolidado", min: 63, max: 66 },
+  { number: 5, name: "Dominio", min: 67, max: 100 },
 ];
 
 export function getLevel(indexScore: number): Level {

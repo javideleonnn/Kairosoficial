@@ -40,34 +40,9 @@ async function main() {
       password: ownerPassword,
       email_confirm: true,
     });
-if (userError) {
-  if (userError.message.includes("already been registered")) {
-    console.log("El usuario ya existe, continuando...");
-
-    const { data: existingUsers, error: listError } =
-      await supabase.auth.admin.listUsers();
-
-    if (listError) {
-      throw new Error(`No se pudo obtener el usuario existente: ${listError.message}`);
-    }
-
-    const existingUser = existingUsers.users.find(
-      (u) => u.email === ownerEmail
-    );
-
-    if (!existingUser) {
-      throw new Error("El usuario existe pero no se pudo recuperar.");
-    }
-
-    userData.user = existingUser;
-  } else {
-    throw new Error(`No se pudo crear el usuario: ${userError.message}`);
+  if (userError || !userData.user) {
+    throw new Error(`No se pudo crear el usuario: ${userError?.message}`);
   }
-}
-
-if (!userData.user) {
-  throw new Error("No se pudo obtener el usuario.");
-}
 
   console.log("2/3 — Creando organización...");
   const { data: org, error: orgError } = await supabase

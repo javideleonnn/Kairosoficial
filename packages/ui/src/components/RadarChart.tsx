@@ -8,6 +8,8 @@ export interface RadarDatum {
 interface RadarChartProps {
   data: RadarDatum[];
   highlightKey?: string;
+  /** ancho máximo en px — el SVG es responsive (width: 100%) hasta este tope,
+   * así nunca desborda en pantallas angostas aunque el número sea grande */
   size?: number;
 }
 
@@ -38,81 +40,93 @@ export function RadarChart({
   const rings = [0.25, 0.5, 0.75, 1];
 
   return (
-    <svg
-      viewBox="0 0 200 200"
-      width={size}
-      height={size}
-      className="mx-auto"
-      style={{
-        animation: "fade-in-up 700ms var(--ease-kairos) forwards",
-      }}
-    >
-      {rings.map((r) => (
-        <polygon
-          key={r}
-          points={data
-            .map((_, i) => {
-              const p = pointAt(i * angleStep, RADIUS * r);
-              return `${p.x},${p.y}`;
-            })
-            .join(" ")}
-          fill="none"
-          stroke="var(--color-foreground)"
-          strokeOpacity={0.08}
-        />
-      ))}
-
-      {axisPoints.map((p, i) => (
-        <line
-          key={data[i]!.key}
-          x1={CENTER}
-          y1={CENTER}
-          x2={p.x}
-          y2={p.y}
-          stroke="var(--color-foreground)"
-          strokeOpacity={0.12}
-        />
-      ))}
-
-      <polygon
-        points={dataPath}
-        fill="var(--color-accent)"
-        fillOpacity={0.22}
-        stroke="var(--color-accent)"
-        strokeWidth={1.5}
-      />
-
-      {dataPoints.map((p, i) => {
-        const isHighlight = data[i]!.key === highlightKey;
-        return (
-          <circle
-            key={data[i]!.key}
-            cx={p.x}
-            cy={p.y}
-            r={isHighlight ? 4 : 2.5}
-            fill="var(--color-accent)"
-            style={isHighlight ? { filter: "drop-shadow(0 0 4px var(--color-accent))" } : undefined}
+    <div className="mx-auto" style={{ width: "100%", maxWidth: size }}>
+      <svg viewBox="0 0 200 200" width="100%" height="100%">
+        {rings.map((r) => (
+          <polygon
+            key={r}
+            points={data
+              .map((_, i) => {
+                const p = pointAt(i * angleStep, RADIUS * r);
+                return `${p.x},${p.y}`;
+              })
+              .join(" ")}
+            fill="none"
+            stroke="var(--color-foreground)"
+            strokeOpacity={0.08}
           />
-        );
-      })}
+        ))}
 
-      {axisPoints.map((p, i) => {
-        const labelPoint = pointAt(i * angleStep, RADIUS + 14);
-        return (
-          <text
-            key={data[i]!.key}
-            x={labelPoint.x}
-            y={labelPoint.y}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize={8}
+        {axisPoints.map((p, i) => {
+          const isHighlight = data[i]!.key === highlightKey;
+          return (
+            <line
+              key={data[i]!.key}
+              x1={CENTER}
+              y1={CENTER}
+              x2={p.x}
+              y2={p.y}
+              stroke={isHighlight ? "var(--color-accent)" : "var(--color-foreground)"}
+              strokeOpacity={isHighlight ? 0.45 : 0.12}
+              strokeWidth={isHighlight ? 1.2 : 1}
+            />
+          );
+        })}
+
+        {/* El grupo que "se dibuja" — crece desde el centro al montar.
+            El tono es gris neutro (no dorado): el dorado se reserva
+            exclusivamente al eje/vértice dominante, para que el ojo lo
+            encuentre de inmediato sin tener que leer nada. */}
+        <g
+          style={{
+            transformOrigin: "100px 100px",
+            animation: "radar-draw 800ms var(--ease-kairos) forwards",
+          }}
+        >
+          <polygon
+            points={dataPath}
             fill="var(--color-foreground)"
-            fillOpacity={data[i]!.key === highlightKey ? 1 : 0.5}
-          >
-            {data[i]!.label}
-          </text>
-        );
-      })}
-    </svg>
+            fillOpacity={0.08}
+            stroke="var(--color-foreground)"
+            strokeOpacity={0.4}
+            strokeWidth={1.25}
+          />
+
+          {dataPoints.map((p, i) => {
+            const isHighlight = data[i]!.key === highlightKey;
+            return (
+              <circle
+                key={data[i]!.key}
+                cx={p.x}
+                cy={p.y}
+                r={isHighlight ? 4.5 : 2.5}
+                fill={isHighlight ? "var(--color-accent)" : "var(--color-foreground)"}
+                fillOpacity={isHighlight ? 1 : 0.5}
+                style={isHighlight ? { filter: "drop-shadow(0 0 5px var(--color-accent))" } : undefined}
+              />
+            );
+          })}
+        </g>
+
+        {axisPoints.map((p, i) => {
+          const isHighlight = data[i]!.key === highlightKey;
+          const labelPoint = pointAt(i * angleStep, RADIUS + 14);
+          return (
+            <text
+              key={data[i]!.key}
+              x={labelPoint.x}
+              y={labelPoint.y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={8}
+              fill={isHighlight ? "var(--color-accent)" : "var(--color-foreground)"}
+              fillOpacity={isHighlight ? 1 : 0.45}
+            >
+              {data[i]!.label}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
