@@ -1,10 +1,3 @@
--- Corrección del Módulo 12: el trigger que crea el lead solo se dispara
--- cuando el diagnóstico YA se completó (diagnostic_sessions solo guarda
--- sesiones completas, ver Módulo 8) — por lo tanto el lead debe nacer en
--- "Diagnóstico completado", no en "Nuevo". "Nuevo" queda reservado para
--- un futuro donde se capturen leads antes de terminar el diagnóstico
--- (ej. abandono a medio camino — ver pendiente del Módulo 8/12).
-
 create or replace function public.create_lead_from_diagnostic_session()
 returns trigger as $$
 declare

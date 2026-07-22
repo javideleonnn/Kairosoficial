@@ -1,9 +1,5 @@
 import type { NextConfig } from "next";
 
-// Cabeceras mínimas de seguridad, indispensables para producción — no
-// optimización cosmética. No incluye Content-Security-Policy todavía: una
-// CSP mal calibrada rompe silenciosamente Tailwind/scripts inline, y
-// afinarla bien es un esfuerzo aparte documentado como pendiente.
 const SECURITY_HEADERS = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },

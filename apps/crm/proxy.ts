@@ -25,9 +25,6 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  // IMPORTANTE: getUser() (no getSession()) — valida el token contra el
-  // servidor de Supabase en vez de solo leer la cookie, que podría estar
-  // manipulada. Es más lento pero es la única validación segura en middleware.
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -50,10 +47,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Corre en todas las rutas excepto assets estáticos y archivos internos
-     * de Next, para no gastar una validación de sesión en cada imagen/CSS.
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

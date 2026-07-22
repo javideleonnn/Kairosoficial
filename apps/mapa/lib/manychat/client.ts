@@ -1,13 +1,3 @@
-/**
- * Cliente mínimo de la API de ManyChat. Endpoints y formas de payload
- * verificados contra la documentación real de ManyChat (api.manychat.com),
- * no inventados — ver notas de cada función.
- *
- * Todo esto es "fire and forget" desde el punto de vista del usuario: si
- * ManyChat falla o no está configurado, el diagnóstico del usuario NUNCA
- * se ve afectado — solo se registra el error.
- */
-
 const MANYCHAT_API_BASE = "https://api.manychat.com";
 
 interface ManyChatConfig {
@@ -22,12 +12,6 @@ function getConfig(): ManyChatConfig | null {
   return { apiToken, flowNs };
 }
 
-/**
- * Setea un custom field del subscriber ANTES de disparar el flow — sendFlow
- * no acepta datos dinámicos de forma confiable (reportado en la comunidad
- * de ManyChat), así que los datos deben existir como custom field primero
- * para que el flow los muestre vía {{nombre_del_campo}}.
- */
 async function setCustomField(
   config: ManyChatConfig,
   subscriberId: string,
@@ -40,11 +24,7 @@ async function setCustomField(
       Authorization: `Bearer ${config.apiToken}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      subscriber_id: subscriberId,
-      field_id: fieldId,
-      field_value: fieldValue,
-    }),
+    body: JSON.stringify({ subscriber_id: subscriberId, field_id: fieldId, field_value: fieldValue }),
   });
 }
 
@@ -55,10 +35,7 @@ async function sendFlow(config: ManyChatConfig, subscriberId: string): Promise<v
       Authorization: `Bearer ${config.apiToken}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      subscriber_id: subscriberId,
-      flow_ns: config.flowNs,
-    }),
+    body: JSON.stringify({ subscriber_id: subscriberId, flow_ns: config.flowNs }),
   });
 
   if (!response.ok) {
@@ -66,13 +43,6 @@ async function sendFlow(config: ManyChatConfig, subscriberId: string): Promise<v
   }
 }
 
-/**
- * Notifica a ManyChat que un diagnóstico se completó — setea los custom
- * fields configurados (el negocio los crea en su cuenta de ManyChat y
- * provee los field_id vía env vars) y dispara el flow de seguimiento.
- * Nunca lanza — cualquier error se atrapa y se loguea, el diagnóstico del
- * usuario no depende de esto.
- */
 export async function notifyManyChatOfCompletedDiagnostic(params: {
   subscriberId: string;
   resultCode: string;

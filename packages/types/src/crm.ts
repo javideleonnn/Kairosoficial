@@ -1,8 +1,3 @@
-/**
- * Tipos del CRM y capa de tenancy. Ver Arquitectura Técnica, Parte 2,
- * secciones 2, 5, 6 y 7, y Parte 3 (permisos).
- */
-
 export type PermissionKey =
   | "leads:read:all"
   | "leads:read:assigned"

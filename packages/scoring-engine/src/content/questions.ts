@@ -3,11 +3,9 @@ import type { StaticQuestion } from "./types";
 /**
  * Las 12 preguntas de Mapa Kairos — Método Umbral · Los 5 Bloqueos.
  * v3: rediseñadas desde el mapa conceptual de 20 manifestaciones (4 por
- * bloqueo), no por recorte de las 20 preguntas originales. Cada pregunta
- * mide manifestaciones específicas y sin redundancia; 3 preguntas de
- * escenario (Q3, Q4, Q5) existen específicamente para distinguir los 3
- * pares de "conducta idéntica, causa distinta" identificados en el mapa
- * conceptual:
+ * bloqueo), no por recorte de las 20 preguntas originales. 3 preguntas de
+ * escenario (Q3, Q4, Q5) distinguen explícitamente los 3 pares de
+ * "conducta idéntica, causa distinta":
  *   - Q3: FD (abandona por dispersión) vs AS (abandona justo cuando va bien)
  *   - Q4: IDE (no hay yo desde el cual negarse) vs VE (hay yo, pero teme decepcionar)
  *   - Q5: FD (modo reactivo, sin plan) vs DM (con plan, pero depende del ánimo)

@@ -12,12 +12,7 @@ interface BoardProps {
 
 export function Board({ initialStages }: BoardProps): React.JSX.Element {
   const [stages, setStages] = useState(initialStages);
-
-  // distance: 8 — un click sin movimiento significativo se trata como
-  // click (abre la ficha), no como el inicio de un drag.
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   function handleDragEnd(event: DragEndEvent) {
     const leadId = event.active.id as string;
@@ -29,7 +24,6 @@ export function Board({ initialStages }: BoardProps): React.JSX.Element {
 
     const lead = currentStage.leads.find((l) => l.id === leadId)!;
 
-    // Update optimista — la tarjeta se mueve al instante en la UI.
     setStages((prev) =>
       prev.map((stage) => {
         if (stage.id === currentStage.id) {
@@ -43,10 +37,7 @@ export function Board({ initialStages }: BoardProps): React.JSX.Element {
     );
 
     void updateLeadStage(leadId, newStageId).then((result) => {
-      if (!result.success) {
-        // Revierte si el servidor rechazó el cambio (ej. sin permiso).
-        setStages(initialStages);
-      }
+      if (!result.success) setStages(initialStages);
     });
   }
 

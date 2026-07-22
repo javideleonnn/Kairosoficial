@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, FadeInSection } from "@kairos/ui";
+import { Screen, Button } from "@kairos/ui";
 
 interface IntroScreenProps {
   onStart: () => void;
@@ -18,23 +18,20 @@ const TRUST_ITEMS = ["Metodología propia", "Resultado personalizado", "Informac
 export function IntroScreen({ onStart }: IntroScreenProps): React.JSX.Element {
   return (
     <main className="relative flex min-h-screen flex-col justify-between overflow-hidden bg-background px-6 py-8 text-foreground sm:py-12">
-      {/* Fondo — degradados suaves, sin imágenes ni color plano */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-accent/10 blur-[120px]" />
         <div className="absolute bottom-0 right-0 h-80 w-80 translate-x-1/4 translate-y-1/4 rounded-full bg-accent/[0.06] blur-[130px]" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/30" />
       </div>
 
-      {/* Header */}
-      <FadeInSection index={0} className="flex justify-center">
+      <div className="flex justify-center">
         <span className="text-xs font-medium uppercase tracking-[0.3em] text-foreground/50">
           Kairos
         </span>
-      </FadeInSection>
+      </div>
 
-      {/* Hero + card + CTA */}
       <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-8 py-10">
-        <FadeInSection index={1} className="text-center">
+        <div className="text-center">
           <h1 className="font-serif text-3xl leading-tight sm:text-4xl">
             Descubre qué te está frenando.
           </h1>
@@ -42,36 +39,33 @@ export function IntroScreen({ onStart }: IntroScreenProps): React.JSX.Element {
             En menos de 3 minutos obtendrás tu Mapa Kairos, una representación
             visual del patrón que hoy limita más tu crecimiento.
           </p>
-        </FadeInSection>
+        </div>
 
-        <FadeInSection index={2}>
-          <div className="rounded-3xl border border-foreground/10 bg-foreground/[0.04] p-5 backdrop-blur-xl sm:p-6">
-            <ul className="space-y-4">
-              {FEATURES.map(({ icon: Icon, label }) => (
-                <li key={label} className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/30 text-accent">
-                    <Icon />
-                  </span>
-                  <span className="text-sm text-foreground/80">{label}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </FadeInSection>
+        <div className="rounded-3xl border border-foreground/10 bg-foreground/[0.04] p-5 backdrop-blur-xl sm:p-6">
+          <ul className="space-y-4">
+            {FEATURES.map(({ icon: Icon, label }) => (
+              <li key={label} className="flex items-center gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/30 text-accent">
+                  <Icon />
+                </span>
+                <span className="text-sm text-foreground/80">{label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        <FadeInSection index={3} className="flex justify-center">
+        <div className="flex justify-center">
           <Button onClick={onStart} className="w-full px-8 py-3.5 text-base sm:w-auto">
             Comenzar mi Mapa
           </Button>
-        </FadeInSection>
+        </div>
       </div>
 
-      {/* Indicadores de confianza */}
-      <FadeInSection index={4} className="flex justify-center">
+      <div className="flex justify-center">
         <p className="text-center text-[11px] text-foreground/35">
           {TRUST_ITEMS.join("  ·  ")}
         </p>
-      </FadeInSection>
+      </div>
     </main>
   );
 }

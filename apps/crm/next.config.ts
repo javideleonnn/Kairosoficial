@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-// Cabeceras mínimas de seguridad. X-Robots-Tag es específico de esta app:
-// el CRM es privado, nunca debe aparecer en buscadores.
 const SECURITY_HEADERS = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },

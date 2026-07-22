@@ -11,11 +11,6 @@ import type { AletheiaResult, EngineAnswer } from "./types";
 const ENGINE_VERSION = "aletheia-v1";
 const CLOSING_QUESTION_ID = "q12";
 
-/**
- * Punto de entrada único de Aletheia. Función pura: mismas respuestas →
- * mismo resultado, siempre. No importa React, Next.js, Supabase ni nada
- * que dependa del navegador o de I/O — testeable de forma aislada.
- */
 export function computeAletheiaResult(
   answers: EngineAnswer[],
   questions: StaticQuestion[] = QUESTIONS,
@@ -29,8 +24,6 @@ export function computeAletheiaResult(
   const closingOption = closingQuestion?.options.find(
     (o) => o.id === closingAnswer?.questionOptionId,
   );
-  // Ya validado por validateAnswers() — closingOption siempre existe si
-  // Q20 forma parte del set de preguntas.
   const closingBlock = closingOption?.blockKey ?? "FD";
 
   const { dominant, secondary, isMixedProfile } = determineDominantAndSecondary(

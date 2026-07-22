@@ -7,4 +7,3 @@ export { computeDimensionScores, computeIndexScore } from "./engine/dimensions";
 export { getLevel } from "./engine/levels";
 export { getPatterns } from "./engine/patterns";
 export { validateAnswers } from "./engine/validate";
-

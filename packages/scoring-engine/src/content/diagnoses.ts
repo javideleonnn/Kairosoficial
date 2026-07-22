@@ -11,11 +11,6 @@ export interface FullDiagnosis {
   potential: string;
 }
 
-/**
- * Los 5 diagnósticos completos — deliberadamente sin sección de "cómo
- * resolverlo" (ver documento original). El objetivo es generar claridad
- * total, no ofrecer el camino de salida.
- */
 export const FULL_DIAGNOSES: Record<BlockKey, FullDiagnosis> = {
   FD: {
     meaning:

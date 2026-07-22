@@ -18,10 +18,7 @@ export default function LoginPage(): React.JSX.Element {
     setIsSubmitting(true);
 
     const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (signInError) {
       setError("Correo o contraseña incorrectos.");
@@ -41,15 +38,11 @@ export default function LoginPage(): React.JSX.Element {
       >
         <div>
           <h1 className="font-serif text-xl">Kairos CRM</h1>
-          <p className="mt-1 text-sm text-foreground/50">
-            Acceso solo para el equipo.
-          </p>
+          <p className="mt-1 text-sm text-foreground/50">Acceso solo para el equipo.</p>
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="email" className="text-sm text-foreground/70">
-            Correo
-          </label>
+          <label htmlFor="email" className="text-sm text-foreground/70">Correo</label>
           <input
             id="email"
             type="email"
@@ -61,9 +54,7 @@ export default function LoginPage(): React.JSX.Element {
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="password" className="text-sm text-foreground/70">
-            Contraseña
-          </label>
+          <label htmlFor="password" className="text-sm text-foreground/70">Contraseña</label>
           <input
             id="password"
             type="password"

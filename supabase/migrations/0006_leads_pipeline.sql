@@ -1,9 +1,3 @@
--- CRM v1 (corte vertical) — Módulo 11.
--- Simplificación deliberada: `pipeline_stages` cuelga directo de
--- `organization_id` (un pipeline implícito por organización), no existe
--- todavía la tabla `pipelines` intermedia del documento de arquitectura
--- original — se agrega si algún día un negocio necesita más de un pipeline.
-
 create table public.pipeline_stages (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -16,10 +10,6 @@ create table public.pipeline_stages (
 
 create index idx_pipeline_stages_org on public.pipeline_stages(organization_id);
 
--- Cada organización nueva recibe automáticamente las 8 etapas por defecto.
--- Resuelve un problema de secuencia real: las migraciones corren antes de
--- que exista ninguna organización (se crea después, vía bootstrap-owner.ts
--- del Módulo 4) — no se puede seedear con un organization_id fijo aquí.
 create or replace function public.seed_default_pipeline_stages()
 returns trigger as $$
 begin
@@ -40,8 +30,6 @@ create trigger trg_seed_default_pipeline_stages
   after insert on public.organizations
   for each row execute function public.seed_default_pipeline_stages();
 
--- leads -------------------------------------------------------------------
-
 create table public.leads (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -60,10 +48,6 @@ create index idx_leads_org on public.leads(organization_id);
 create index idx_leads_stage on public.leads(current_stage_id);
 create index idx_leads_assigned on public.leads(assigned_advisor_id);
 
--- Cada diagnóstico completado se convierte automáticamente en un lead, en
--- la etapa "Nuevo" de su organización — así el CRM tiene datos reales
--- desde el primer diagnóstico, sin depender de que Mapa Kairos capture
--- contacto (que hoy no hace).
 create or replace function public.create_lead_from_diagnostic_session()
 returns trigger as $$
 declare
@@ -75,8 +59,6 @@ begin
   limit 1;
 
   if v_nuevo_stage_id is null then
-    -- No debería ocurrir (el trigger de organizations ya sembró las etapas),
-    -- pero nunca debe romper el guardado del diagnóstico por esto.
     return new;
   end if;
 
@@ -90,8 +72,6 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 create trigger trg_create_lead_from_diagnostic_session
   after insert on public.diagnostic_sessions
   for each row execute function public.create_lead_from_diagnostic_session();
-
--- RLS -----------------------------------------------------------------
 
 alter table public.pipeline_stages enable row level security;
 
@@ -121,6 +101,3 @@ create policy "members_select_leads" on public.leads
 create policy "members_update_leads" on public.leads
   for update
   using (public.has_permission(organization_id, 'leads:write'));
-
--- Sin policy de insert para authenticated/anon — los leads solo se crean
--- vía el trigger (que corre con privilegios de definer), nunca directo.

@@ -3,15 +3,8 @@
  * (snake_case), validadas ejecutando las migraciones de /supabase/migrations
  * contra una base de datos real.
  *
- * Nota: estos tipos son distintos de los de @kairos/types (que son camelCase,
- * pensados para la capa de aplicación). La conversión entre ambos se resuelve
- * en la capa de acceso a datos de cada módulo que la necesite — no existe
- * todavía porque no hay tablas de dominio más allá de tenancy.
- *
  * Se generan a mano porque `supabase gen types` requiere Docker (para correr
- * postgres-meta), no disponible en este entorno. Quedan sincronizados con
- * las migraciones a mano — cualquier cambio de columna debe reflejarse aquí
- * en el mismo PR/commit que la migración.
+ * postgres-meta), no disponible en este entorno.
  */
 
 export type Json =

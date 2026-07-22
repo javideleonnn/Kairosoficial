@@ -11,15 +11,12 @@ interface SubmitPayload {
   durationSeconds: number;
   source?: string;
   locale?: string;
-  /** capturado de un query param cuando se llega desde ManyChat, ver Módulo 10 */
   manychatSubscriberId?: string;
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
   const organizationId = process.env.KAIROS_ORGANIZATION_ID;
   if (!organizationId) {
-    // Error de configuración del servidor, no del usuario — no debería
-    // llegar nunca a producción sin esta variable seteada.
     return NextResponse.json(
       { error: "El servidor no tiene configurada la organización." },
       { status: 500 },
@@ -37,8 +34,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "Faltan las respuestas." }, { status: 400 });
   }
 
-  // El cálculo SIEMPRE ocurre aquí, en el servidor — nunca se confía en un
-  // resultado que pudiera venir precalculado del cliente (ver Módulo 7).
   let result;
   try {
     result = computeAletheiaResult(payload.answers);
@@ -73,8 +68,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
-  // Fire-and-forget: si hay subscriber de ManyChat, notificar. Nunca debe
-  // bloquear ni afectar la respuesta al usuario si esto falla.
   if (payload.manychatSubscriberId) {
     void notifyManyChatOfCompletedDiagnostic({
       subscriberId: payload.manychatSubscriberId,

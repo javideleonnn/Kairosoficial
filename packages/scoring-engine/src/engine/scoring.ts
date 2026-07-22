@@ -7,10 +7,6 @@ function emptyTally(): Record<BlockKey, number> {
   return { FD: 0, IDE: 0, DM: 0, AS: 0, VE: 0 };
 }
 
-/** El máximo puntaje crudo que un bloqueo podría alcanzar en este set de
- * preguntas, si cada respuesta hubiera favorecido a ese bloqueo al máximo.
- * Es la base de la normalización — ver documento "Sistema de Diagnóstico v2",
- * sección 2. */
 export function computeMaxPossiblePerBlock(
   questions: StaticQuestion[],
 ): Record<BlockKey, number> {
@@ -26,8 +22,6 @@ export function computeMaxPossiblePerBlock(
         if (option.blockKey) max[option.blockKey] += topWeight;
       }
     } else {
-      // single_select, scenario, fill_blank — a lo sumo una opción por
-      // bloqueo dentro de la misma pregunta (así están diseñadas las 20).
       for (const option of question.options) {
         if (option.blockKey && option.weight) {
           max[option.blockKey] += option.weight;
@@ -39,7 +33,6 @@ export function computeMaxPossiblePerBlock(
   return max;
 }
 
-/** El puntaje crudo real obtenido a partir de las respuestas del usuario. */
 export function computeRawScores(
   answers: EngineAnswer[],
   questions: StaticQuestion[],
@@ -49,7 +42,7 @@ export function computeRawScores(
 
   for (const answer of answers) {
     const question = questionsById.get(answer.questionId);
-    if (!question) continue; // ya validado antes de llegar aquí
+    if (!question) continue;
 
     if (question.format === "scale" && question.scoringConfig?.kind === "scale") {
       const { blockId, min, max, direction } = question.scoringConfig;

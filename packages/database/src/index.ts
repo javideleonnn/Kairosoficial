@@ -4,4 +4,3 @@ export {
   createSupabaseServerClient,
   createSupabaseServiceRoleClient,
 } from "./client/server";
-

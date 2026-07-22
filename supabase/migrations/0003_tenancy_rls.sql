@@ -1,10 +1,3 @@
--- RLS de la capa de tenancy. Ver Arquitectura Técnica, Parte 3, sección 5.
---
--- has_permission() es SECURITY DEFINER a propósito: las policies de
--- organization_members necesitan consultar organization_members para saber
--- si el usuario actual es admin/owner — sin SECURITY DEFINER esa subconsulta
--- quedaría atrapada por su propia RLS (recursión). Es el patrón recomendado
--- por Supabase para funciones usadas dentro de policies.
 create or replace function public.has_permission(org_id uuid, permission_key text)
 returns boolean
 language sql
@@ -23,7 +16,6 @@ as $$
   );
 $$;
 
--- organizations ---------------------------------------------------------
 alter table public.organizations enable row level security;
 
 create policy "members_select_own_organization" on public.organizations
@@ -41,21 +33,12 @@ create policy "admins_update_organization" on public.organizations
   for update
   using (public.has_permission(id, 'settings:manage'));
 
--- La creación de organizaciones es un flujo controlado (onboarding), no
--- autoservicio todavía — se hace vía service_role, que ignora RLS. No se
--- crea policy de insert para el rol authenticated.
-
--- roles -------------------------------------------------------------------
 alter table public.roles enable row level security;
 
 create policy "roles_are_public_reference_data" on public.roles
   for select
   using (true);
 
--- Los roles son datos de referencia de la plataforma, no se modifican vía
--- API — solo por migración. Sin policies de insert/update/delete.
-
--- organization_members ----------------------------------------------------
 alter table public.organization_members enable row level security;
 
 create policy "members_select_self_or_team_managers" on public.organization_members

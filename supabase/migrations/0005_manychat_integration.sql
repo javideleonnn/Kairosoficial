@@ -1,12 +1,3 @@
--- Integración con ManyChat. Ver Módulo 10:
--- - manychat_subscriber_id: capturado de un query param cuando el usuario
---   llega desde un link DENTRO de una conversación de ManyChat (no se pide
---   nunca directamente al usuario).
--- - webhook_events: log de eventos entrantes de ManyChat. Todavía no existe
---   la tabla `leads` (Módulo 11) para asociarlos a un contacto — por ahora
---   se guardan crudos, y el Módulo 11 los procesa retroactivamente si hace
---   falta.
-
 alter table public.diagnostic_sessions
   add column manychat_subscriber_id text;
 
@@ -39,6 +30,3 @@ create policy "members_select_own_org_webhook_events" on public.webhook_events
         and om.status = 'active'
     )
   );
-
--- Igual que diagnostic_sessions: el único escritor es el Route Handler del
--- webhook, vía service_role — sin policy de insert para authenticated/anon.

@@ -63,7 +63,6 @@ function validateSingleAnswer(question: StaticQuestion, answer: EngineAnswer): v
     return;
   }
 
-  // single_select, scenario, fill_blank
   const validOptionIds = new Set(question.options.map((o) => o.id));
   if (!answer.questionOptionId || !validOptionIds.has(answer.questionOptionId)) {
     throw new AletheiaValidationError(

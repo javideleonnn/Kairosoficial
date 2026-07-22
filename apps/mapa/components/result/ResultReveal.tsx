@@ -19,19 +19,13 @@ const SHORT_LABEL: Record<BlockKey, string> = {
   VE: "Validación",
 };
 
-// Orden fijo de despliegue — mismo orden en el radar y en las barras, para
-// que ambos se lean como la misma información en dos formatos distintos.
 const BLOCK_ORDER: BlockKey[] = ["FD", "IDE", "DM", "AS", "VE"];
 
-// Un solo "paso" de tiempo para TODA la secuencia de revelación (70ms —
-// dentro del rango 50-70ms pedido para las barras, y reutilizado para el
-// resto de la pantalla por coherencia). Los índices de abajo son la
-// posición de cada elemento en la secuencia completa, no por sección.
 const STEP_MS = 70;
 const STEP = {
   dominant: 0,
   radar: 2,
-  bars: 5, // + 0..4, uno por bloqueo
+  bars: 5,
   paragraph: 12,
   nextStep: 14,
   vsl: 16,
@@ -41,7 +35,6 @@ const STEP = {
 
 interface ResultRevealProps {
   result: AletheiaResult;
-  /** cuando exista el VSL, se pasa su url y el bloque se activa solo */
   vslUrl?: string;
 }
 
@@ -60,13 +53,15 @@ export function ResultReveal({ result, vslUrl }: ResultRevealProps): React.JSX.E
 
   return (
     <Screen className="items-start px-6 py-16">
-      {/* Fondo apenas perceptible — mismo lenguaje del resto del producto */}
+      {/* Fondo atmosférico — más presente que en la pantalla de preguntas,
+          es el "momento" de toda la experiencia, aquí sí puede notarse. */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 rounded-full bg-accent/[0.05] blur-[140px]" />
+        <div className="absolute left-1/2 top-[28%] h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[150px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/50" />
       </div>
 
       <div className="mx-auto w-full max-w-sm space-y-16 pb-16">
-        {/* 1 — El patrón dominante. Una sola pregunta respondida: cuál. */}
+        {/* 1 — El patrón dominante. Nombre completo, nunca siglas. */}
         <FadeInSection index={STEP.dominant} stepDelayMs={STEP_MS} className="text-center">
           <p className="text-xs uppercase tracking-[0.2em] text-foreground/35">
             Tu bloqueo dominante
@@ -81,34 +76,33 @@ export function ResultReveal({ result, vslUrl }: ResultRevealProps): React.JSX.E
           ) : null}
         </FadeInSection>
 
-        {/* 2 — El radar. El elemento visual más importante de la pantalla.
-            Responsive (ver RadarChart) — el tamaño es un tope máximo,
-            nunca desborda en pantallas angostas. Se dibuja solo, en tonos
-            grises, con el eje dominante resaltado en dorado. */}
-        <FadeInSection index={STEP.radar} stepDelayMs={STEP_MS} className="flex justify-center">
+        {/* 2 — El radar. El elemento visual más importante de la pantalla,
+            con glow atmosférico propio detrás. Etiquetas cortas (no siglas)
+            por espacio; el nombre completo ya se mostró arriba. */}
+        <FadeInSection index={STEP.radar} stepDelayMs={STEP_MS} className="relative flex justify-center">
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.06] blur-[90px]" />
           <RadarChart data={radarData} highlightKey={result.dominantBlock} size={360} />
         </FadeInSection>
 
-        {/* 3 — Las 5 barras de bloqueo. Entrada escalonada de 70ms entre
-            cada una — sin porcentajes, la dominante con etiqueta. */}
-        <div className="space-y-4">
-          {BLOCK_ORDER.map((key, i) => (
-            <FadeInSection key={key} index={STEP.bars + i} stepDelayMs={STEP_MS}>
-              <DimensionBar
-                label={BLOCK_NAMES[key]}
-                value={result.blockScores[key].normalized}
-                showValue={false}
-                highlight={key === result.dominantBlock}
-                tag={key === result.dominantBlock ? "Patrón dominante" : undefined}
-              />
-            </FadeInSection>
-          ))}
+        {/* 3 — Las 5 barras, con nombres completos, sin porcentajes,
+            agrupadas en un contenedor tipo tarjeta. */}
+        <div className="rounded-3xl border border-foreground/10 bg-foreground/[0.02] p-6">
+          <div className="space-y-4">
+            {BLOCK_ORDER.map((key, i) => (
+              <FadeInSection key={key} index={STEP.bars + i} stepDelayMs={STEP_MS}>
+                <DimensionBar
+                  label={BLOCK_NAMES[key]}
+                  value={result.blockScores[key].normalized}
+                  showValue={false}
+                  highlight={key === result.dominantBlock}
+                  tag={key === result.dominantBlock ? "Patrón dominante" : undefined}
+                />
+              </FadeInSection>
+            ))}
+          </div>
         </div>
 
-        {/* 4 — Un único párrafo, con espacio generoso — un momento de
-            reflexión, no un dato más en la lista. line-clamp-4 garantiza
-            el límite visual incluso si el copy (todavía provisional) es
-            más largo. */}
+        {/* 4 — Un único párrafo, con espacio generoso. */}
         <FadeInSection index={STEP.paragraph} stepDelayMs={STEP_MS} className="py-6">
           <p className="line-clamp-4 text-center text-sm leading-relaxed text-foreground/70">
             {diagnosis.meaning}
@@ -132,18 +126,17 @@ export function ResultReveal({ result, vslUrl }: ResultRevealProps): React.JSX.E
         </FadeInSection>
 
         {/* 6 — Espacio reservado para el VSL. No renderiza nada visible
-            todavía — solo se activa cuando exista una url real, para no
-            mostrar una caja vacía a usuarios reales mientras tanto. */}
+            todavía — solo se activa cuando exista una url real. */}
         {vslUrl ? (
           <FadeInSection index={STEP.vsl} stepDelayMs={STEP_MS}>
             <div className="aspect-video w-full overflow-hidden rounded-2xl border border-foreground/10">
-              {/* Implementación del reproductor: pendiente, Módulo aparte */}
+              {/* Implementación del reproductor: pendiente, fuera de alcance */}
             </div>
           </FadeInSection>
         ) : null}
 
-        {/* 7 — CTA. Único botón con protagonismo. Copy provisional —
-            pendiente de pruebas A/B a futuro. */}
+        {/* 7 — CTA. Pill sólido dorado (estilo de la referencia) — único
+            botón con protagonismo real de toda la pantalla. */}
         <FadeInSection index={STEP.cta} stepDelayMs={STEP_MS} className="text-center">
           {whatsappNumber ? (
             <a
@@ -152,19 +145,20 @@ export function ResultReveal({ result, vslUrl }: ResultRevealProps): React.JSX.E
               rel="noopener noreferrer"
               className="inline-block"
             >
-              <Button className="px-8 py-3.5">Solicitar revisión personalizada</Button>
+              <Button className="border-accent bg-accent px-8 py-3.5 text-background hover:bg-accent hover:shadow-[0_0_28px_-6px_var(--color-accent)]">
+                Solicitar revisión personalizada
+              </Button>
             </a>
           ) : (
-            <Button disabled className="px-8 py-3.5">
+            <Button disabled className="border-accent bg-accent px-8 py-3.5 text-background">
               Solicitar revisión personalizada
             </Button>
           )}
         </FadeInSection>
 
-        {/* 8 — Cierre elegante. Deliberadamente sin botón ni link — la
-            única sección de toda la pantalla sin ninguna acción posible,
-            para que el conjunto termine en quietud. Copy provisional. */}
+        {/* 8 — Cierre elegante. Sin botón ni link. */}
         <FadeInSection index={STEP.closing} stepDelayMs={STEP_MS} className="pt-6 text-center">
+          <p className="mb-2 font-serif text-2xl text-accent/40">&rdquo;</p>
           <p className="mx-auto max-w-[20rem] font-serif text-base italic leading-relaxed text-foreground/40">
             Toda transformación comienza cuando dejas de repetir el mismo patrón.
           </p>

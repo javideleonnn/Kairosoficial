@@ -13,12 +13,8 @@
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
-  "peerDependencies": {
-    "react": ">=19"
-  },
-  "dependencies": {
-    "@kairos/types": "workspace:*"
-  },
+  "peerDependencies": { "react": ">=19" },
+  "dependencies": { "@kairos/types": "workspace:*" },
   "devDependencies": {
     "@kairos/config": "workspace:*",
     "@types/react": "^19.0.1",

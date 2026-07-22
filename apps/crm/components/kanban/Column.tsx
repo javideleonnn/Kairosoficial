@@ -14,9 +14,7 @@ export function Column({ stage }: ColumnProps): React.JSX.Element {
   return (
     <div
       ref={setNodeRef}
-      className={`flex w-64 shrink-0 flex-col rounded-2xl border p-3 transition-colors duration-150 ${
-        isOver ? "border-accent/60 bg-accent/5" : "border-foreground/10"
-      }`}
+      className={`flex w-64 shrink-0 flex-col rounded-2xl border p-3 transition-colors duration-150 ${isOver ? "border-accent/60 bg-accent/5" : "border-foreground/10"}`}
     >
       <div className="mb-3 flex items-center justify-between px-1">
         <span className="text-xs font-medium text-foreground/70">{stage.name}</span>

@@ -36,7 +36,6 @@ export function RadarChart({
   const dataPoints = data.map((d, i) => pointAt(i * angleStep, (Math.max(0, Math.min(100, d.value)) / 100) * RADIUS));
   const dataPath = dataPoints.map((p) => `${p.x},${p.y}`).join(" ");
 
-  // Anillos de referencia (25/50/75/100%) — ayudan a leer la magnitud sin números.
   const rings = [0.25, 0.5, 0.75, 1];
 
   return (
@@ -73,10 +72,6 @@ export function RadarChart({
           );
         })}
 
-        {/* El grupo que "se dibuja" — crece desde el centro al montar.
-            El tono es gris neutro (no dorado): el dorado se reserva
-            exclusivamente al eje/vértice dominante, para que el ojo lo
-            encuentre de inmediato sin tener que leer nada. */}
         <g
           style={{
             transformOrigin: "100px 100px",

@@ -23,8 +23,6 @@ export function DiagnosticFlow(): React.JSX.Element {
   const manychatSubscriberIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Se lee directo de window.location en vez de useSearchParams para no
-    // forzar esta página (hoy estática) a requerir un boundary de Suspense.
     const params = new URLSearchParams(window.location.search);
     manychatSubscriberIdRef.current = params.get("mc");
   }, []);
@@ -57,8 +55,6 @@ export function DiagnosticFlow(): React.JSX.Element {
         throw new Error(data.error ?? "Error desconocido al guardar el diagnóstico.");
       }
 
-      // La persistencia real vive en /resultado/[sessionId] — un refresh
-      // ahí vuelve a cargar desde Supabase, no desde este estado en memoria.
       router.push(`/resultado/${data.sessionId}`);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Error de red.");
@@ -105,18 +101,25 @@ export function DiagnosticFlow(): React.JSX.Element {
   }
 
   const currentStep = steps[stepIndex];
-  if (!currentStep) {
-    return (
-      <Screen>
-        <p className="text-sm text-foreground/60">Algo salió mal. Recarga la página.</p>
-      </Screen>
-    );
-  }
 
+  // Contenedor persistente para toda la fase "flow" — el fondo (con blur,
+  // costoso en móvil) se pinta UNA sola vez aquí y nunca se remonta entre
+  // preguntas. Antes vivía dentro de QuestionScreen, que se remonta en cada
+  // pregunta (key={question.id}) — recalcular un blur de 130px cada ~300ms
+  // era la causa real del lag, no el número de preguntas ni la lógica.
   return (
-    <>
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-1/2 top-1/4 h-96 w-96 -translate-x-1/2 rounded-full bg-accent/[0.05] blur-[130px]" />
+      </div>
+
       <DiagnosticHeader answered={answered} total={total} />
-      {currentStep.kind === "transition" ? (
+
+      {!currentStep ? (
+        <div className="flex min-h-screen items-center justify-center px-6">
+          <p className="text-sm text-foreground/60">Algo salió mal. Recarga la página.</p>
+        </div>
+      ) : currentStep.kind === "transition" ? (
         <TransitionScreen
           key={currentStep.transition.afterQuestionId}
           transition={currentStep.transition}
@@ -133,6 +136,6 @@ export function DiagnosticFlow(): React.JSX.Element {
           onContinue={advance}
         />
       )}
-    </>
+    </div>
   );
 }

@@ -5,18 +5,11 @@ import type { BlockKey, AletheiaResult } from "@kairos/scoring-engine";
 import { fetchLeadDetail } from "@/lib/leads/fetchDetail";
 
 const SHORT_LABEL: Record<BlockKey, string> = {
-  FD: "Dirección",
-  IDE: "Identidad",
-  DM: "Motivación",
-  AS: "Sabotaje",
-  VE: "Validación",
+  FD: "Dirección", IDE: "Identidad", DM: "Motivación", AS: "Sabotaje", VE: "Validación",
 };
 
 const DIMENSION_LABEL: Record<keyof AletheiaResult["dimensionScores"], string> = {
-  claridad: "Claridad",
-  accion: "Acción",
-  confianza: "Confianza",
-  compromiso: "Compromiso",
+  claridad: "Claridad", accion: "Acción", confianza: "Confianza", compromiso: "Compromiso",
 };
 
 interface PageProps {
@@ -37,16 +30,12 @@ export default async function LeadDetailPage({ params }: PageProps): Promise<Rea
 
   const { result } = lead;
   const radarData: RadarDatum[] = (Object.keys(result.blockScores) as BlockKey[]).map((key) => ({
-    key,
-    label: SHORT_LABEL[key],
-    value: result.blockScores[key].normalized,
+    key, label: SHORT_LABEL[key], value: result.blockScores[key].normalized,
   }));
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 p-6">
-      <Link href="/" className="text-xs text-foreground/40 hover:text-foreground/70">
-        ← Volver al pipeline
-      </Link>
+      <Link href="/" className="text-xs text-foreground/40 hover:text-foreground/70">← Volver al pipeline</Link>
 
       <div>
         <h1 className="font-serif text-xl">{lead.fullName ?? "Sin identificar"}</h1>
@@ -70,33 +59,22 @@ export default async function LeadDetailPage({ params }: PageProps): Promise<Rea
       <RadarChart data={radarData} highlightKey={result.dominantBlock} size={240} />
 
       <div className="space-y-4">
-        {(Object.keys(result.dimensionScores) as Array<keyof AletheiaResult["dimensionScores"]>).map(
-          (key) => (
-            <DimensionBar
-              key={key}
-              label={DIMENSION_LABEL[key]}
-              value={result.dimensionScores[key]}
-            />
-          ),
-        )}
+        {(Object.keys(result.dimensionScores) as Array<keyof AletheiaResult["dimensionScores"]>).map((key) => (
+          <DimensionBar key={key} label={DIMENSION_LABEL[key]} value={result.dimensionScores[key]} />
+        ))}
       </div>
 
       {result.patterns.length > 0 ? (
         <div className="space-y-2 border-t border-foreground/10 pt-6 text-sm">
-          <p className="text-xs uppercase tracking-widest text-foreground/40">
-            Patrones detectados
-          </p>
+          <p className="text-xs uppercase tracking-widest text-foreground/40">Patrones detectados</p>
           {result.patterns.map((pattern) => (
-            <p key={pattern} className="text-foreground/70">
-              {pattern}
-            </p>
+            <p key={pattern} className="text-foreground/70">{pattern}</p>
           ))}
         </div>
       ) : null}
 
       <p className="border-t border-foreground/10 pt-6 text-xs text-foreground/30">
-        Notas, etiquetas e historial de interacciones llegan en un próximo
-        incremento del CRM.
+        Notas, etiquetas e historial de interacciones llegan en un próximo incremento del CRM.
       </p>
     </div>
   );

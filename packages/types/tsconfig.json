@@ -1,7 +1,5 @@
 {
   "extends": "@kairos/config/tsconfig.base.json",
-  "compilerOptions": {
-    "baseUrl": "."
-  },
+  "compilerOptions": { "baseUrl": "." },
   "include": ["src"]
 }

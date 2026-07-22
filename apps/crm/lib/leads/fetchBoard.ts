@@ -20,12 +20,6 @@ export interface LeadCardData {
   lastInteractionAt: string | null;
 }
 
-/**
- * Trae etapas + leads de la organización del usuario logueado. Usa el
- * cliente de servidor autenticado (no service_role) — esta es la primera
- * consulta real del proyecto que depende de las policies RLS del Módulo 3
- * funcionando correctamente en producción, no solo en las pruebas locales.
- */
 export async function fetchPipelineBoard(): Promise<PipelineStageWithLeads[]> {
   const supabase = await createClient();
 
@@ -45,19 +39,10 @@ export async function fetchPipelineBoard(): Promise<PipelineStageWithLeads[]> {
 
   if (leadsError || !leads) {
     return stages.map((s) => ({
-      id: s.id,
-      key: s.key,
-      name: s.name,
-      orderIndex: s.order_index,
-      color: s.color,
-      leads: [],
+      id: s.id, key: s.key, name: s.name, orderIndex: s.order_index, color: s.color, leads: [],
     }));
   }
 
-  // Los datos del diagnóstico (resultCode, bloqueo, nivel) viven en
-  // diagnostic_sessions.result — se piden por separado y se combinan aquí,
-  // en vez de forzar el modelo de datos a duplicarlos en `leads` (Módulo 8,
-  // misma filosofía: no normalizar/duplicar antes de que haga falta).
   const sessionIds = leads.map((l) => l.diagnostic_session_id);
   const { data: sessions } = await supabase
     .from("diagnostic_sessions")
@@ -88,11 +73,7 @@ export async function fetchPipelineBoard(): Promise<PipelineStageWithLeads[]> {
   }
 
   return stages.map((s) => ({
-    id: s.id,
-    key: s.key,
-    name: s.name,
-    orderIndex: s.order_index,
-    color: s.color,
+    id: s.id, key: s.key, name: s.name, orderIndex: s.order_index, color: s.color,
     leads: cardsByStage.get(s.id) ?? [],
   }));
 }

@@ -6,6 +6,14 @@ interface SelectionCardProps {
   rankBadge?: number | undefined;
 }
 
+/**
+ * Fila con radio circle a la izquierda — estilo tomado de la imagen de
+ * referencia oficial. Deliberadamente SIN backdrop-blur (a diferencia de
+ * la versión anterior de glassmorphism): backdrop-filter en hasta 5
+ * elementos animándose por pregunta era la causa real del lag en móvil
+ * (ver optimización de rendimiento). El look "premium" viene del borde,
+ * el radio circle y el glow al seleccionar, no del blur-through.
+ */
 export function SelectionCard({
   label,
   selected,
@@ -16,32 +24,26 @@ export function SelectionCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`w-full rounded-[28px] border px-6 py-5 text-left text-sm backdrop-blur-md transition-all duration-200 ease-kairos ${
+      className={`flex w-full items-center gap-4 rounded-2xl border px-5 py-4 text-left text-sm transition-colors duration-150 ${
         selected
-          ? "border-accent/30 bg-accent/[0.04] shadow-[0_0_14px_-6px_var(--color-accent)]"
-          : "border-foreground/10 bg-foreground/[0.03] hover:-translate-y-0.5 hover:border-foreground/20"
+          ? "border-accent/50 bg-accent/[0.05]"
+          : "border-foreground/12 bg-foreground/[0.015] hover:border-foreground/25"
       }`}
     >
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-foreground/90">{label}</span>
-        {rankBadge != null ? (
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-accent/50 text-xs text-accent">
-            {rankBadge}
-          </span>
-        ) : selected ? (
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center text-accent">
-            <CheckIcon />
-          </span>
-        ) : null}
-      </div>
+      {rankBadge != null ? (
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-accent/50 text-xs text-accent">
+          {rankBadge}
+        </span>
+      ) : (
+        <span
+          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors duration-150 ${
+            selected ? "border-accent" : "border-foreground/25"
+          }`}
+        >
+          {selected ? <span className="h-2.5 w-2.5 rounded-full bg-accent" /> : null}
+        </span>
+      )}
+      <span className="text-foreground/90">{label}</span>
     </button>
-  );
-}
-
-function CheckIcon(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12.5l4.5 4.5L19 7" />
-    </svg>
   );
 }

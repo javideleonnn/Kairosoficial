@@ -7,12 +7,6 @@ export interface DiagnosticSessionRecord {
   createdAt: string;
 }
 
-/**
- * Recupera una sesión por su id (UUID impredecible = la "llave" de acceso,
- * patrón de URL de capacidad — ver decisión del Módulo 9). Usa el cliente
- * de service_role porque esta consulta corre en un Server Component, nunca
- * se expone la tabla directamente al cliente vía anon key.
- */
 export async function fetchDiagnosticSession(
   sessionId: string,
 ): Promise<DiagnosticSessionRecord | null> {
@@ -33,8 +27,6 @@ export async function fetchDiagnosticSession(
       createdAt: data.created_at,
     };
   } catch {
-    // Config faltante (env vars) o cualquier error de red/cliente — nunca
-    // debe crashear la página, solo mostrar el estado de "no encontrado".
     return null;
   }
 }

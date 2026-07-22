@@ -19,10 +19,10 @@ export function ScaleQuestion({ value, onSelect }: ScaleQuestionProps): React.JS
             <button
               type="button"
               onClick={() => onSelect(n)}
-              className={`flex h-12 w-12 items-center justify-center rounded-full border text-sm backdrop-blur-md transition-all duration-200 ease-kairos ${
+              className={`flex h-12 w-12 items-center justify-center rounded-full border text-sm transition-colors duration-150 ${
                 value === n
-                  ? "border-accent/30 bg-accent/[0.04] text-accent shadow-[0_0_14px_-6px_var(--color-accent)]"
-                  : "border-foreground/10 bg-foreground/[0.03] hover:-translate-y-0.5 hover:border-foreground/20"
+                  ? "border-accent bg-accent/[0.06] text-accent"
+                  : "border-foreground/15 hover:border-foreground/30"
               }`}
             >
               {n}

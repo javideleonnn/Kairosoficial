@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Screen } from "@kairos/ui";
 import type { StaticQuestion } from "@kairos/scoring-engine";
 import type { DraftAnswer } from "@/lib/diagnostic/flow";
 import { isAnswerComplete } from "@/lib/diagnostic/flow";
@@ -16,16 +15,20 @@ interface QuestionScreenProps {
   onContinue: () => void;
 }
 
-// Palabra discreta sobre la pregunta — copy provisional (ver rediseño).
+// Palabra discreta sobre la pregunta — copy provisional (sin cambios en
+// este sprint, fuera de alcance — ver auditoría UX, Hallazgo #6).
 const EYEBROW = "Reflexiona";
+const HELPER = "Elige la que más se acerque a tu realidad.";
 
-// Cuánto permanece visible la selección antes de avanzar sola.
 const AUTO_ADVANCE_DELAY_MS = 300;
-
-// Duración de la transición entre preguntas — ajustada de 400ms a 250ms
-// para que se sienta casi imperceptible, no una animación "vista".
 const TRANSITION_DURATION_MS = 250;
 
+/**
+ * Nota de rendimiento: este componente ya NO renderiza su propio fondo
+ * (antes tenía un blur de 130px que se recalculaba en cada remount, cada
+ * ~300-550ms — la causa real del lag en móvil). El fondo ahora vive una
+ * sola vez en DiagnosticFlow, que nunca se remonta.
+ */
 export function QuestionScreen({
   question,
   answer,
@@ -45,23 +48,22 @@ export function QuestionScreen({
   }, [complete, answerKey]);
 
   return (
-    <Screen className="px-6 pb-16 pt-28">
-      {/* Fondo — apenas perceptible, no debe notarse como "diseño" */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-1/4 h-96 w-96 -translate-x-1/2 rounded-full bg-accent/[0.05] blur-[130px]" />
-      </div>
-
+    <div className="flex min-h-screen items-center justify-center px-6 pb-16 pt-28">
       <div
         key={question.id}
         style={{ animation: `fade-in-slide ${TRANSITION_DURATION_MS}ms var(--ease-kairos) forwards` }}
         className="w-full max-w-sm"
       >
-        <p className="mb-5 text-[11px] uppercase tracking-[0.2em] text-foreground/25">
-          {EYEBROW}
-        </p>
-        <p className="mb-16 font-serif text-[28px] leading-[1.25] tracking-tight sm:text-4xl">
-          {question.prompt}
-        </p>
+        <div className="mb-10 text-center">
+          <p className="mb-5 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.2em] text-foreground/30">
+            <span className="h-1 w-1 rounded-full bg-accent/60" />
+            {EYEBROW}
+          </p>
+          <p className="font-serif text-[26px] leading-[1.3] tracking-tight sm:text-3xl">
+            {question.prompt}
+          </p>
+          <p className="mt-4 text-sm text-accent/70">{HELPER}</p>
+        </div>
 
         {question.format === "scale" ? (
           <ScaleQuestion
@@ -86,6 +88,6 @@ export function QuestionScreen({
           />
         )}
       </div>
-    </Screen>
+    </div>
   );
 }

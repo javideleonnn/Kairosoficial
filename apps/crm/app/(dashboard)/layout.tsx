@@ -10,8 +10,6 @@ export default async function DashboardLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Defensa en profundidad: el middleware ya protege esta ruta, pero un
-  // Server Component nunca debe asumir que el request llegó validado.
   if (!user) {
     redirect("/login");
   }

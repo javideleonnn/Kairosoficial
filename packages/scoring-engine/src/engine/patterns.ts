@@ -1,12 +1,5 @@
 import type { BlockKey } from "../content/types";
 
-/**
- * Subset MVP de la biblioteca de patrones del documento de arquitectura
- * (que preveía 3-5 patrones por combinación dominante+secundario). Aquí:
- * un patrón base por bloqueo dominante, más un puñado de combinaciones
- * específicas cuando existen. Se amplía cuando el negocio lo requiera —
- * la función ya soporta agregar entradas sin cambiar su forma.
- */
 const DOMINANT_PATTERNS: Record<BlockKey, string> = {
   FD: "Cambias de enfoque antes de que el anterior tenga oportunidad de dar resultado.",
   IDE: "Actúas distinto según el entorno — cuesta identificar cuál es la versión que de verdad eres tú.",

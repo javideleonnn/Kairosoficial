@@ -8,10 +8,8 @@ export function DiagnosticHeader({ answered, total }: DiagnosticHeaderProps): Re
 
   return (
     <header className="fixed left-0 top-0 z-10 w-full">
-      <div className="flex justify-center pb-3 pt-5">
-        <span className="text-[11px] font-medium uppercase tracking-[0.3em] text-foreground/40">
-          Kairos
-        </span>
+      <div className="flex items-center px-6 pb-3 pt-5">
+        <span className="font-serif text-sm tracking-wide text-accent/90">Kairos</span>
       </div>
       <div className="h-0.5 w-full bg-foreground/10">
         <div

@@ -1,16 +1,10 @@
 import { QUESTIONS, TRANSITIONS } from "@kairos/scoring-engine";
 import type { StaticQuestion, Transition } from "@kairos/scoring-engine";
 
-/**
- * Una respuesta en memoria, con nombres de campo alineados a `Answer` de
- * @kairos/types (questionOptionId, valueNumeric) — para que el Módulo 7
- * (Aletheia) y el Módulo 8 (guardado) puedan consumirla sin traducción.
- */
 export interface DraftAnswer {
   questionId: string;
   questionOptionId?: string;
   valueNumeric?: number;
-  /** solo en ranking — ids de opción en orden de más a menos identificado */
   rankedOptionIds?: string[];
 }
 

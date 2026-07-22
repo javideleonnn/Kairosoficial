@@ -8,9 +8,6 @@ import { AletheiaValidationError } from "../types";
 import type { EngineAnswer, BlockScore } from "../types";
 import type { BlockKey } from "../../content/types";
 
-/** Construye respuestas eligiendo, para cada pregunta, la opción del primer
- * bloqueo de `priority` presente en esa pregunta — determinista y reutilizable
- * entre casos de prueba. */
 function buildAnswersByPriority(priority: BlockKey[]): EngineAnswer[] {
   return QUESTIONS.map((q) => {
     if (q.format === "scale" && q.scoringConfig?.kind === "scale") {
@@ -35,8 +32,6 @@ function buildAnswersByPriority(priority: BlockKey[]): EngineAnswer[] {
   });
 }
 
-/** Reparte las elecciones en rotación entre bloqueos, sin concentrar en uno
- * solo — modela un perfil disperso, sin bloqueo agudo. */
 function buildDispersedAnswers(): EngineAnswer[] {
   let rotation = 0;
   return QUESTIONS.map((q) => {

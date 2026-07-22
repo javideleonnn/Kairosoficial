@@ -5,13 +5,6 @@ function avg(values: number[]): number {
   return values.reduce((sum, v) => sum + v, 0) / values.length;
 }
 
-/**
- * Fórmulas fijas del documento "Sistema de Diagnóstico v2":
- *   Claridad    = 100 − promedio(FD, IDE)
- *   Acción      = 100 − promedio(DM, AS)
- *   Confianza   = 100 − promedio(AS, IDE, VE)
- *   Compromiso  = 100 − promedio(DM, VE)
- */
 export function computeDimensionScores(
   blockScores: Record<BlockKey, BlockScore>,
 ): DimensionScores {
@@ -25,7 +18,6 @@ export function computeDimensionScores(
   };
 }
 
-/** El Índice Kairos — promedio simple de las 4 dimensiones. */
 export function computeIndexScore(dimensions: DimensionScores): number {
   return Math.round(
     avg([dimensions.claridad, dimensions.accion, dimensions.confianza, dimensions.compromiso]),
