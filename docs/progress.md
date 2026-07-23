@@ -147,3 +147,49 @@ aprobadas una por una. Puntos clave:
 - Content-Security-Policy calibrada, monitoreo de errores en producción.
 - Rotación del copy "Reflexiona" (hoy estático en las 12 preguntas) —
   señalado en la auditoría UX, deliberadamente pospuesto.
+
+---
+
+## Reconstrucción completa del frontend del diagnóstico (post-rediseño visual)
+
+A petición explícita: reconstrucción desde cero, no iteración. Se eliminó y
+reemplazó por completo la implementación de `IntroScreen`, `QuestionScreen`,
+`SelectionCard`, `ScaleQuestion`, `RankingQuestion`, `SingleSelectQuestion`,
+`TransitionScreen`, `ResultReveal` y `DiagnosticHeader` — mismos nombres de
+archivo (para no romper imports), código interno 100% nuevo. `ResultReveal`
+y `RadarShape`/`BlockBar` ya no dependen de `@kairos/ui` (antes usaban
+`Button`, `Screen`, `FadeInSection`, `RadarChart`, `DimensionBar`
+compartidos) — ahora son implementaciones locales a Mapa Kairos.
+`@kairos/ui` queda intacto para el CRM, que no formaba parte de este pedido.
+
+**Se conservó exactamente lo pedido:** el motor Aletheia, la metodología,
+las API routes, la integración con Supabase y ManyChat, y la lógica de
+navegación (`lib/diagnostic/flow.ts`, el estado de `DiagnosticFlow`) —
+ninguno de estos archivos se tocó en su lógica.
+
+**Reglas duras de rendimiento aplicadas y verificadas (no solo en el
+código, con `grep` sobre CSS/JS real):**
+- Cero `backdrop-filter` / `filter: blur()` en toda la experiencia.
+- Cero `transition-all` aplicado realmente (el único resto es CSS muerto
+  de Tailwind por escanear `@kairos/ui`, sin ningún elemento que lo use).
+- Exactamente 1 animación (`<Entrance>`, transform+opacity, transition
+  única) por pantalla — confirmado por conteo real en las 4 pantallas.
+- Barra de progreso: `transform: scaleX()`, no `width`.
+- Autoavance de preguntas: 120ms (antes 300ms) — "inmediato" real, no una
+  espera deliberada.
+
+**Decisión de producto que se marcó explícitamente, no se ocultó:** la
+revelación progresiva de 8 pasos del resultado (aprobada en una sesión
+anterior como diseño) es incompatible con "máximo una animación por
+pantalla" — se colapsó a una sola entrada para todo el contenido. Es un
+cambio de experiencia real, priorizado sobre la narrativa escalonada por
+instrucción explícita de que las reglas nuevas prevalecen.
+
+**Ruta temporal `/preview`** — creada a pedido, permite ver Intro,
+Pregunta (3 formatos), Transición y Resultado con datos simulados, sin
+Supabase. No se elimina hasta aprobación visual explícita.
+
+**Limitación de entorno reconfirmada:** no hay navegador real disponible
+en este sandbox (se intentó instalar Chromium vía apt — Ubuntu solo lo
+distribuye como snap, y snapd no tiene conectividad aquí). No se
+entregaron capturas; se entrega `/preview` para verificación directa.

@@ -1,110 +1,93 @@
 "use client";
 
-import { Screen, Button } from "@kairos/ui";
+import { Entrance } from "./Entrance";
+import { AtmosphericBackground } from "@/components/AtmosphericBackground";
 
 interface IntroScreenProps {
   onStart: () => void;
 }
 
-const FEATURES = [
-  { icon: IconList, label: "12 preguntas" },
-  { icon: IconClock, label: "3 minutos" },
-  { icon: IconSpark, label: "Resultado inmediato" },
-  { icon: IconLock, label: "Sin registro" },
-] as const;
-
-const TRUST_ITEMS = ["Metodología propia", "Resultado personalizado", "Información privada"];
-
+/**
+ * Segunda iteración del diseño — editorial, más moderno. Ya no hay un
+ * emblema central aislado: el titular es el protagonista absoluto, con
+ * la constelación integrada como una firma discreta detrás del texto,
+ * no como una ilustración separada. Layout de una sola columna, muy
+ * vertical, con mucho aire — lenguaje más "revista de lujo" que "app".
+ */
 export function IntroScreen({ onStart }: IntroScreenProps): React.JSX.Element {
   return (
-    <main className="relative flex min-h-screen flex-col justify-between overflow-hidden bg-background px-6 py-8 text-foreground sm:py-12">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-accent/10 blur-[120px]" />
-        <div className="absolute bottom-0 right-0 h-80 w-80 translate-x-1/4 translate-y-1/4 rounded-full bg-accent/[0.06] blur-[130px]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/30" />
+    <main className="relative flex min-h-screen flex-col px-6 py-8 text-foreground">
+      <AtmosphericBackground />
+
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium uppercase tracking-[0.4em] text-accent/80">Kairos</span>
+        <span className="h-1.5 w-1.5 rounded-full bg-accent" />
       </div>
 
-      <div className="flex justify-center">
-        <span className="text-xs font-medium uppercase tracking-[0.3em] text-foreground/50">
-          Kairos
-        </span>
-      </div>
-
-      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-8 py-10">
-        <div className="text-center">
-          <h1 className="font-serif text-3xl leading-tight sm:text-4xl">
-            Descubre qué te está frenando.
+      <Entrance className="flex flex-1 flex-col justify-center">
+        <div className="relative">
+          <ConstellationSignature />
+          <p className="relative text-[13px] uppercase tracking-[0.3em] text-accent/70">
+            Diagnóstico personal
+          </p>
+          <h1 className="relative mt-4 font-serif text-[44px] leading-[1.08] tracking-tight">
+            Descubre
+            <br />
+            qué te está
+            <br />
+            <span className="italic text-accent">frenando.</span>
           </h1>
-          <p className="mx-auto mt-3 max-w-[26rem] text-sm text-foreground/55 sm:text-base">
-            En menos de 3 minutos obtendrás tu Mapa Kairos, una representación
-            visual del patrón que hoy limita más tu crecimiento.
+          <p className="relative mt-6 max-w-[19rem] text-[15px] leading-relaxed text-foreground/50">
+            En menos de 3 minutos obtendrás tu Mapa Kairos — una
+            representación visual del patrón que hoy limita tu crecimiento.
           </p>
         </div>
 
-        <div className="rounded-3xl border border-foreground/10 bg-foreground/[0.04] p-5 backdrop-blur-xl sm:p-6">
-          <ul className="space-y-4">
-            {FEATURES.map(({ icon: Icon, label }) => (
-              <li key={label} className="flex items-center gap-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/30 text-accent">
-                  <Icon />
-                </span>
-                <span className="text-sm text-foreground/80">{label}</span>
-              </li>
-            ))}
-          </ul>
+        <div className="mt-14 flex gap-8 border-y border-foreground/10 py-6">
+          {[
+            ["12", "preguntas"],
+            ["3 min", "duración"],
+            ["100%", "privado"],
+          ].map(([value, label]) => (
+            <div key={label}>
+              <p className="font-serif text-xl text-foreground">{value}</p>
+              <p className="mt-0.5 text-xs text-foreground/45">{label}</p>
+            </div>
+          ))}
         </div>
+      </Entrance>
 
-        <div className="flex justify-center">
-          <Button onClick={onStart} className="w-full px-8 py-3.5 text-base sm:w-auto">
-            Comenzar mi Mapa
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex justify-center">
-        <p className="text-center text-[11px] text-foreground/35">
-          {TRUST_ITEMS.join("  ·  ")}
-        </p>
+      <div className="w-full pb-2 pt-8">
+        <button
+          type="button"
+          onClick={onStart}
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-accent py-4 text-base font-medium text-background"
+        >
+          Comenzar mi Mapa
+          <span aria-hidden>→</span>
+        </button>
+        <p className="mt-4 text-center text-xs text-foreground/35">Sin registro. 100% privado.</p>
       </div>
     </main>
   );
 }
 
-function IconList(): React.JSX.Element {
+/** Firma discreta detrás del titular — unas pocas estrellas conectadas,
+ * posicionada absoluta, muy sutil (opacidad baja), no es el protagonista. */
+function ConstellationSignature(): React.JSX.Element {
+  const stars = [
+    { x: 260, y: 10 }, { x: 300, y: 55 }, { x: 250, y: 95 }, { x: 310, y: 130 },
+  ];
   return (
-    <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
-      <line x1="8" y1="6" x2="19" y2="6" />
-      <line x1="8" y1="12" x2="19" y2="12" />
-      <line x1="8" y1="18" x2="19" y2="18" />
-      <circle cx="4.5" cy="6" r="1" fill="currentColor" stroke="none" />
-      <circle cx="4.5" cy="12" r="1" fill="currentColor" stroke="none" />
-      <circle cx="4.5" cy="18" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function IconClock(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M12 8v4l3 2" />
-    </svg>
-  );
-}
-
-function IconSpark(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 4l1.8 5.2L19 11l-5.2 1.8L12 18l-1.8-5.2L5 11l5.2-1.8L12 4z" />
-    </svg>
-  );
-}
-
-function IconLock(): React.JSX.Element {
-  return (
-    <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="5" y="11" width="14" height="9" rx="2" />
-      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    <svg viewBox="0 0 340 220" className="pointer-events-none absolute -right-4 -top-6 h-56 w-full opacity-70" preserveAspectRatio="xMaxYMin meet">
+      {stars.map((s, i) => (
+        <g key={i}>
+          {i > 0 ? (
+            <line x1={stars[i - 1]!.x} y1={stars[i - 1]!.y} x2={s.x} y2={s.y} stroke="var(--color-accent)" strokeOpacity={0.25} />
+          ) : null}
+          <circle cx={s.x} cy={s.y} r={i === 1 ? 3 : 2} fill="var(--color-accent)" fillOpacity={0.8} />
+        </g>
+      ))}
     </svg>
   );
 }

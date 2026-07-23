@@ -2,16 +2,22 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Screen, Button } from "@kairos/ui";
 import { buildFlowSteps, countAnsweredQuestions, totalQuestions } from "@/lib/diagnostic/flow";
 import type { DraftAnswer } from "@/lib/diagnostic/flow";
 import { IntroScreen } from "./IntroScreen";
 import { TransitionScreen } from "./TransitionScreen";
 import { QuestionScreen } from "./QuestionScreen";
-import { DiagnosticHeader } from "./DiagnosticHeader";
+import { Entrance } from "./Entrance";
+import { AtmosphericBackground } from "@/components/AtmosphericBackground";
 
 type Phase = "intro" | "flow" | "submitting" | "error";
 
+/**
+ * Orquestador del diagnóstico. La lógica de navegación (buildFlowSteps,
+ * qué paso sigue, cuándo se envía) es la misma de siempre — se agregó
+ * únicamente `goBack()`, porque la Imagen 3/4/5 muestra una flecha atrás
+ * funcional en cada pregunta (no existía antes).
+ */
 export function DiagnosticFlow(): React.JSX.Element {
   const router = useRouter();
   const steps = useMemo(() => buildFlowSteps(), []);
@@ -70,6 +76,14 @@ export function DiagnosticFlow(): React.JSX.Element {
     setStepIndex((i) => i + 1);
   }
 
+  function goBack() {
+    if (stepIndex === 0) {
+      setPhase("intro");
+      return;
+    }
+    setStepIndex((i) => Math.max(0, i - 1));
+  }
+
   if (phase === "intro") {
     return (
       <IntroScreen
@@ -83,40 +97,46 @@ export function DiagnosticFlow(): React.JSX.Element {
 
   if (phase === "submitting") {
     return (
-      <Screen>
-        <p className="font-serif text-lg">Guardando tu diagnóstico...</p>
-      </Screen>
+      <div className="flex min-h-screen items-center justify-center text-foreground">
+        <AtmosphericBackground />
+        <Entrance>
+          <p className="font-serif text-lg">Guardando tu diagnóstico...</p>
+        </Entrance>
+      </div>
     );
   }
 
   if (phase === "error") {
     return (
-      <Screen>
-        <div className="max-w-sm space-y-4 text-center">
+      <div className="flex min-h-screen items-center justify-center px-6 text-foreground">
+        <AtmosphericBackground />
+        <Entrance className="max-w-sm space-y-4 text-center">
           <p className="text-sm text-amber-400">{errorMessage}</p>
-          <Button onClick={() => void submitDiagnostic()}>Reintentar</Button>
-        </div>
-      </Screen>
+          <button
+            type="button"
+            onClick={() => void submitDiagnostic()}
+            className="rounded-full border border-accent px-6 py-2.5 text-sm text-accent"
+          >
+            Reintentar
+          </button>
+        </Entrance>
+      </div>
     );
   }
 
   const currentStep = steps[stepIndex];
 
-  // Contenedor persistente para toda la fase "flow" — el fondo (con blur,
-  // costoso en móvil) se pinta UNA sola vez aquí y nunca se remonta entre
-  // preguntas. Antes vivía dentro de QuestionScreen, que se remonta en cada
-  // pregunta (key={question.id}) — recalcular un blur de 130px cada ~300ms
-  // era la causa real del lag, no el número de preguntas ni la lógica.
+  // Número de pregunta (1-indexado, solo cuenta pasos "question", igual
+  // que muestra la referencia — "6 / 12", no la posición entre los 14
+  // pasos totales incluyendo transiciones).
+  const questionNumber =
+    steps.slice(0, stepIndex + 1).filter((s) => s.kind === "question").length;
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-1/4 h-96 w-96 -translate-x-1/2 rounded-full bg-accent/[0.05] blur-[130px]" />
-      </div>
-
-      <DiagnosticHeader answered={answered} total={total} />
-
+    <div className="relative">
+      <AtmosphericBackground />
       {!currentStep ? (
-        <div className="flex min-h-screen items-center justify-center px-6">
+        <div className="flex min-h-screen items-center justify-center px-6 text-foreground">
           <p className="text-sm text-foreground/60">Algo salió mal. Recarga la página.</p>
         </div>
       ) : currentStep.kind === "transition" ? (
@@ -124,16 +144,18 @@ export function DiagnosticFlow(): React.JSX.Element {
           key={currentStep.transition.afterQuestionId}
           transition={currentStep.transition}
           onContinue={advance}
+          onBack={goBack}
         />
       ) : (
         <QuestionScreen
           key={currentStep.question.id}
           question={currentStep.question}
           answer={answers[currentStep.question.id]}
-          onAnswerChange={(answer) =>
-            setAnswers((prev) => ({ ...prev, [answer.questionId]: answer }))
-          }
+          onAnswerChange={(answer) => setAnswers((prev) => ({ ...prev, [answer.questionId]: answer }))}
           onContinue={advance}
+          onBack={goBack}
+          questionNumber={questionNumber}
+          totalQuestions={total}
         />
       )}
     </div>

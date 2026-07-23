@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { StaticQuestion } from "@kairos/scoring-engine";
 import type { DraftAnswer } from "@/lib/diagnostic/flow";
 import { isAnswerComplete } from "@/lib/diagnostic/flow";
+import { Entrance } from "./Entrance";
 import { SingleSelectQuestion } from "./SingleSelectQuestion";
 import { ScaleQuestion } from "./ScaleQuestion";
 import { RankingQuestion } from "./RankingQuestion";
@@ -13,81 +14,98 @@ interface QuestionScreenProps {
   answer: DraftAnswer | undefined;
   onAnswerChange: (answer: DraftAnswer) => void;
   onContinue: () => void;
+  onBack: () => void;
+  questionNumber: number;
+  totalQuestions: number;
 }
 
-// Palabra discreta sobre la pregunta — copy provisional (sin cambios en
-// este sprint, fuera de alcance — ver auditoría UX, Hallazgo #6).
-const EYEBROW = "Reflexiona";
-const HELPER = "Elige la que más se acerque a tu realidad.";
-
-const AUTO_ADVANCE_DELAY_MS = 300;
-const TRANSITION_DURATION_MS = 250;
+const AUTO_ADVANCE_DELAY_MS = 120;
 
 /**
- * Nota de rendimiento: este componente ya NO renderiza su propio fondo
- * (antes tenía un blur de 130px que se recalculaba en cada remount, cada
- * ~300-550ms — la causa real del lag en móvil). El fondo ahora vive una
- * sola vez en DiagnosticFlow, que nunca se remonta.
+ * Réplica de las Imágenes 3, 4, 5: header propio (flecha atrás, contador
+ * "X / N", menú "•••", barra de progreso).
  */
 export function QuestionScreen({
   question,
   answer,
   onAnswerChange,
   onContinue,
+  onBack,
+  questionNumber,
+  totalQuestions,
 }: QuestionScreenProps): React.JSX.Element {
   const complete = isAnswerComplete(question, answer);
+  const isRanking = question.format === "ranking";
   const onContinueRef = useRef(onContinue);
   onContinueRef.current = onContinue;
 
   const answerKey = JSON.stringify(answer);
   useEffect(() => {
-    if (!complete) return;
+    // El ranking es la única excepción del flujo: nunca avanza solo, sin
+    // importar cuántas veces se reordene — el usuario confirma con el
+    // botón "Continuar". Ningún timer se programa para este formato.
+    if (!complete || isRanking) return;
     const timer = setTimeout(() => onContinueRef.current(), AUTO_ADVANCE_DELAY_MS);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [complete, answerKey]);
+  }, [complete, answerKey, isRanking]);
+
+  const percent = totalQuestions > 0 ? (questionNumber / totalQuestions) * 100 : 0;
+  const scaleConfig = question.scoringConfig?.kind === "scale" ? question.scoringConfig : null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 pb-16 pt-28">
-      <div
-        key={question.id}
-        style={{ animation: `fade-in-slide ${TRANSITION_DURATION_MS}ms var(--ease-kairos) forwards` }}
-        className="w-full max-w-sm"
-      >
-        <div className="mb-10 text-center">
-          <p className="mb-5 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.2em] text-foreground/30">
-            <span className="h-1 w-1 rounded-full bg-accent/60" />
-            {EYEBROW}
-          </p>
-          <p className="font-serif text-[26px] leading-[1.3] tracking-tight sm:text-3xl">
-            {question.prompt}
-          </p>
-          <p className="mt-4 text-sm text-accent/70">{HELPER}</p>
-        </div>
+    <div className="min-h-screen px-6 pb-16 text-foreground">
+      <div className="flex items-center justify-between pt-5">
+        <button type="button" onClick={onBack} aria-label="Atrás" className="text-foreground/70">
+          <span aria-hidden className="text-xl">←</span>
+        </button>
+        <span className="text-sm text-foreground/60">{questionNumber} / {totalQuestions}</span>
+        <button type="button" aria-label="Más opciones" className="text-foreground/70">
+          <span aria-hidden>•••</span>
+        </button>
+      </div>
 
-        {question.format === "scale" ? (
+      <div className="mt-4 h-0.5 w-full rounded-full bg-foreground/10">
+        <div
+          className="h-full origin-left rounded-full bg-accent transition-transform duration-150 ease-out"
+          style={{ transform: `scaleX(${percent / 100})` }}
+        />
+      </div>
+
+      <Entrance key={question.id} className="mx-auto mt-12 w-full max-w-sm">
+        <p className="mb-10 text-center font-serif text-[26px] leading-[1.3]">{question.prompt}</p>
+
+        {question.format === "scale" && scaleConfig ? (
           <ScaleQuestion
             value={answer?.valueNumeric}
+            min={scaleConfig.min}
+            max={scaleConfig.max}
             onSelect={(valueNumeric) => onAnswerChange({ questionId: question.id, valueNumeric })}
           />
         ) : question.format === "ranking" ? (
-          <RankingQuestion
-            question={question}
-            rankedOptionIds={answer?.rankedOptionIds ?? []}
-            onChange={(rankedOptionIds) =>
-              onAnswerChange({ questionId: question.id, rankedOptionIds })
-            }
-          />
+          <>
+            <RankingQuestion
+              question={question}
+              rankedOptionIds={answer?.rankedOptionIds ?? []}
+              onChange={(rankedOptionIds) => onAnswerChange({ questionId: question.id, rankedOptionIds })}
+            />
+            <button
+              type="button"
+              disabled={!complete}
+              onClick={onContinue}
+              className="mt-8 w-full rounded-full bg-accent py-4 text-base font-medium text-background disabled:opacity-40"
+            >
+              Continuar
+            </button>
+          </>
         ) : (
           <SingleSelectQuestion
             question={question}
             selectedOptionId={answer?.questionOptionId}
-            onSelect={(questionOptionId) =>
-              onAnswerChange({ questionId: question.id, questionOptionId })
-            }
+            onSelect={(questionOptionId) => onAnswerChange({ questionId: question.id, questionOptionId })}
           />
         )}
-      </div>
+      </Entrance>
     </div>
   );
 }
