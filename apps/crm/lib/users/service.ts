@@ -34,7 +34,8 @@ export async function assignProgram(
     await repository.getUserPrograms(userId);
 
   const existing = programs.find(
-    (program) => program.program_id === programId
+    (program: any) =>
+      program.program_id === programId
   );
 
   await repository.deactivatePrograms(userId);
@@ -56,7 +57,7 @@ export async function assignProgram(
   const days =
     await repository.getProgramDays(programId);
 
-  const progress = days.map((day) => ({
+  const progress = days.map((day: any) => ({
     user_program_id: userProgram.id,
     day_id: day.id,
     completed: false,
@@ -110,16 +111,13 @@ export async function getDashboard(
     programs,
   };
 }
-export async function removeUser(userId: string) {
-  await repository.removeUser(userId);
-} 
-export async function removeUserAction(
+
+export async function removeUser(
   userId: string
 ) {
-  await service.removeUser(userId);
-
-  revalidatePath("/usuarios");
+  await repository.removeUser(userId);
 }
+
 export async function sendPasswordReset(
   email: string
 ) {
