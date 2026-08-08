@@ -1,0 +1,256 @@
+@import "tailwindcss";
+
+:root{
+
+  --background:#04080F;
+  --surface:#0E1724;
+  --surface-light:#141F31;
+  --surface-hover:#1A273C;
+
+  --gold:#D8B56B;
+  --gold-light:#F1D38B;
+  --gold-dark:#B68D45;
+
+  --text:#F8F9FC;
+  --muted:#8E98A8;
+
+  --border:rgba(255,255,255,.07);
+
+}
+
+@theme inline {
+
+  --color-background:var(--background);
+  --color-foreground:var(--text);
+
+}
+
+*{
+
+  box-sizing:border-box;
+
+}
+
+html{
+
+  scroll-behavior:smooth;
+
+}
+
+body{
+
+  margin:0;
+
+  color:var(--text);
+
+  background:
+  radial-gradient(circle at top,#182B45 0%,#091321 38%,#04080F 100%);
+
+  font-family:Inter,sans-serif;
+
+  min-height:100vh;
+
+}
+
+::selection{
+
+  background:#D8B56B;
+
+  color:#08111D;
+
+}
+
+.kairos-title{
+
+  font-family:"Cormorant Garamond",serif;
+
+  letter-spacing:.08em;
+
+  font-weight:600;
+
+}
+
+.kairos-subtitle{
+
+  color:var(--muted);
+
+  line-height:1.9;
+
+}
+
+.glass{
+
+  background:rgba(17,26,39,.68);
+
+  backdrop-filter:blur(24px);
+
+  border:1px solid rgba(255,255,255,.05);
+
+}
+
+.kairos-card{
+
+  border-radius:34px;
+
+  border:1px solid var(--border);
+
+  background:
+  linear-gradient(
+  180deg,
+  rgba(22,31,47,.95),
+  rgba(10,17,28,.96));
+
+  box-shadow:
+
+  0 20px 60px rgba(0,0,0,.45),
+
+  inset 0 1px rgba(255,255,255,.03);
+
+}
+
+.kairos-card:hover{
+
+  border-color:rgba(216,181,107,.20);
+
+  transition:.35s;
+
+}
+
+.kairos-card-gold{
+
+  border-radius:36px;
+
+  background:
+
+  linear-gradient(
+  145deg,
+
+  #1B2436,
+
+  #0B1220);
+
+  border:1px solid rgba(216,181,107,.22);
+
+  box-shadow:
+
+  0 25px 80px rgba(0,0,0,.45),
+
+  0 0 45px rgba(216,181,107,.08);
+
+}
+
+.gold-gradient{
+
+  background:
+
+  linear-gradient(
+
+  180deg,
+
+  var(--gold-light),
+
+  var(--gold),
+
+  var(--gold-dark)
+
+  );
+
+}
+
+.kairos-button{
+
+  height:64px;
+
+  border-radius:26px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  font-weight:700;
+
+  color:#07111D;
+
+  transition:.25s;
+
+  cursor:pointer;
+
+}
+
+.kairos-button:hover{
+
+  transform:translateY(-2px);
+
+}
+
+.kairos-button:active{
+
+  transform:scale(.98);
+
+}
+
+.gold-glow{
+
+  box-shadow:
+
+  0 12px 35px rgba(216,181,107,.20);
+
+}
+
+.kairos-divider{
+
+  height:1px;
+
+  background:
+
+  linear-gradient(
+
+  90deg,
+
+  transparent,
+
+  rgba(216,181,107,.35),
+
+  transparent
+
+  );
+
+}
+
+.kairos-chip{
+
+  padding:10px 18px;
+
+  border-radius:999px;
+
+  background:#151F2F;
+
+  border:1px solid rgba(255,255,255,.06);
+
+}
+
+.kairos-number{
+
+  font-family:"Cormorant Garamond",serif;
+
+  font-size:70px;
+
+  line-height:1;
+
+  color:var(--gold);
+
+}
+
+.kairos-hover{
+
+  transition:.3s;
+
+}
+
+.kairos-hover:hover{
+
+  transform:translateY(-4px);
+
+}
