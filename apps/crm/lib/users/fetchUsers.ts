@@ -18,18 +18,50 @@ export interface UserListItem {
 }
 
 export async function fetchUsers(): Promise<UserListItem[]> {
-  const supabase = await createClient();
+  // Evitamos que TypeScript convierta las respuestas de Supabase
+  // en "never" mientras el proyecto todavía no tiene los tipos
+  // generados de la base de datos.
+  const supabase: any = await createClient();
 
-  const { data: profiles, error } = await supabase
+  // ─────────────────────────────────────────────
+  // USUARIOS
+  // ─────────────────────────────────────────────
+
+  const {
+    data: profiles,
+    error: profilesError,
+  } = await supabase
     .from("profiles")
     .select("id, full_name, email")
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false,
+    });
 
-  if (error || !profiles) return [];
+  if (profilesError || !profiles) {
+    console.error(
+      "fetchUsers profiles error:",
+      profilesError,
+    );
 
-  const userIds = profiles.map((p) => p.id);
+    return [];
+  }
 
-  const { data: programs } = await supabase
+  const userIds: string[] = profiles
+    .map((profile: any) => profile.id)
+    .filter(Boolean);
+
+  if (userIds.length === 0) {
+    return [];
+  }
+
+  // ─────────────────────────────────────────────
+  // PROGRAMAS ASIGNADOS
+  // ─────────────────────────────────────────────
+
+  const {
+    data: programs,
+    error: programsError,
+  } = await supabase
     .from("user_programs")
     .select(`
       id,
@@ -44,64 +76,130 @@ export async function fetchUsers(): Promise<UserListItem[]> {
     `)
     .in("user_id", userIds);
 
-  const programMap = new Map(
-    (programs ?? []).map((p: any) => [p.user_id, p])
-  );
-
-  const programIds = (programs ?? []).map((p: any) => p.id);
-
-  const { data: progressRows } = await supabase
-    .from("user_day_progress")
-    .select(`
-      user_program_id,
-      completed
-    `)
-    .in("user_program_id", programIds);
-
-  const completedMap = new Map<string, number>();
-
-  for (const row of progressRows ?? []) {
-    if (!row.completed) continue;
-
-    completedMap.set(
-      row.user_program_id,
-      (completedMap.get(row.user_program_id) ?? 0) + 1
+  if (programsError) {
+    console.error(
+      "fetchUsers programs error:",
+      programsError,
     );
   }
 
-  return profiles.map((profile) => {
-    const program: any = programMap.get(profile.id);
+  const programMap = new Map<string, any>();
 
-    const completed = completedMap.get(program?.id) ?? 0;
+  for (const program of programs ?? []) {
+    if (!program?.user_id) continue;
 
-    const currentDay = program?.current_day ?? 1;
+    programMap.set(
+      String(program.user_id),
+      program,
+    );
+  }
 
-    const progress =
-      currentDay <= 0
-        ? 0
-        : Math.min(
-            100,
-            Math.round((completed / currentDay) * 100)
-          );
+  const programIds: string[] = (programs ?? [])
+    .map((program: any) => program?.id)
+    .filter(Boolean)
+    .map((id: string) => String(id));
 
-    return {
-      id: profile.id,
+  // ─────────────────────────────────────────────
+  // DÍAS COMPLETADOS
+  // ─────────────────────────────────────────────
 
-      fullName: profile.full_name,
+  const completedMap = new Map<string, number>();
 
-      email: profile.email,
+  if (programIds.length > 0) {
+    const {
+      data: progressRows,
+      error: progressError,
+    } = await supabase
+      .from("user_day_progress")
+      .select(`
+        user_program_id,
+        completed
+      `)
+      .in(
+        "user_program_id",
+        programIds,
+      );
 
-      programId: program?.program_id ?? null,
+    if (progressError) {
+      console.error(
+        "fetchUsers progress error:",
+        progressError,
+      );
+    }
 
-      programName: program?.programs?.name ?? null,
+    for (const row of progressRows ?? []) {
+      if (!row?.completed) continue;
 
-      active: program?.active ?? false,
+      const programId = String(
+        row.user_program_id,
+      );
 
-      currentDay,
+      completedMap.set(
+        programId,
+        (completedMap.get(programId) ?? 0) + 1,
+      );
+    }
+  }
 
-      completedDays: completed,
+  // ─────────────────────────────────────────────
+  // RESULTADO FINAL
+  // ─────────────────────────────────────────────
 
-      progress,
-    };
-  });
+  return profiles.map(
+    (profile: any): UserListItem => {
+      const profileId = String(profile.id);
+
+      const program =
+        programMap.get(profileId) ?? null;
+
+      const completed =
+        program?.id
+          ? completedMap.get(
+              String(program.id),
+            ) ?? 0
+          : 0;
+
+      const currentDay =
+        typeof program?.current_day === "number"
+          ? program.current_day
+          : 1;
+
+      const progress =
+        currentDay <= 0
+          ? 0
+          : Math.min(
+              100,
+              Math.round(
+                (completed / currentDay) * 100,
+              ),
+            );
+
+      return {
+        id: profileId,
+
+        fullName:
+          profile.full_name ?? null,
+
+        email:
+          profile.email ?? null,
+
+        programId:
+          program?.program_id
+            ? String(program.program_id)
+            : null,
+
+        programName:
+          program?.programs?.name ?? null,
+
+        active:
+          Boolean(program?.active),
+
+        currentDay,
+
+        completedDays: completed,
+
+        progress,
+      };
+    },
+  );
 }
