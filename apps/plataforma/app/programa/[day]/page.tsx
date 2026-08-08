@@ -23,9 +23,7 @@ function getYoutubeEmbed(url: string) {
   return `https://www.youtube.com/embed/${match[1]}`;
 }
 
-export default async function DayPage({
-  params,
-}: Props) {
+export default async function DayPage({ params }: Props) {
   const { day } = await params;
 
   const supabase = await createClient();
@@ -47,36 +45,30 @@ export default async function DayPage({
   const content = await fetchDay(
     student.program.id,
     student.routeId!,
-    Number(day),
+    Number(day)
   );
 
   if (!content) {
     redirect("/dashboard");
   }
 
+  // Guardamos los valores después de comprobar que existen.
   const userProgramId = student.userProgramId;
+  const contentId = content.id;
 
-async function finishDay() {
-  "use server";
+  async function finishDay() {
+    "use server";
 
-  if (!userProgramId) {
+    await completeDay(userProgramId, contentId);
+
     redirect("/dashboard");
   }
 
-  await completeDay(
-    userProgramId,
-    content.id,
-  );
-
-  redirect("/dashboard");
-}
-
   const embed =
-    content.video_url &&
-    getYoutubeEmbed(content.video_url);
+    content.video_url && getYoutubeEmbed(content.video_url);
 
   return (
-    <main className="mx-auto max-w-md px-6 pt-8 pb-32">
+    <main className="mx-auto max-w-md px-6 pt-8 pb-28">
 
       {/* HERO */}
 
@@ -104,9 +96,7 @@ async function finishDay() {
           </p>
         )}
 
-        {(content.primary_pillar ||
-          content.secondary_pillar) && (
-
+        {(content.primary_pillar || content.secondary_pillar) && (
           <div className="mt-8 flex flex-wrap gap-3">
 
             {content.primary_pillar && (
@@ -122,7 +112,6 @@ async function finishDay() {
             )}
 
           </div>
-
         )}
 
       </section>
@@ -130,11 +119,9 @@ async function finishDay() {
       {/* VIDEO */}
 
       {embed && (
-
         <section className="kairos-card mt-8 overflow-hidden p-2">
 
           {content.video_title && (
-
             <div className="px-5 pt-5">
 
               <p className="text-xs uppercase tracking-[0.35em] text-[var(--gold)]">
@@ -146,7 +133,6 @@ async function finishDay() {
               </h2>
 
             </div>
-
           )}
 
           <div className="mt-5">
@@ -160,25 +146,19 @@ async function finishDay() {
           </div>
 
         </section>
-
       )}
 
       {/* ANTES DE COMENZAR */}
 
       {content.intro && (
-
         <SectionCard title="ANTES DE COMENZAR">
-
           {content.intro}
-
         </SectionCard>
-
       )}
 
       {/* FRASE DEL DÍA */}
 
       {content.daily_quote && (
-
         <section className="kairos-card mt-8 p-8">
 
           <p className="text-xs uppercase tracking-[0.35em] text-[var(--gold)]">
@@ -187,29 +167,24 @@ async function finishDay() {
 
           <div className="kairos-divider my-6" />
 
-          <blockquote className="kairos-title text-[42px] leading-tight text-center italic">
+          <blockquote className="kairos-title text-center text-[42px] italic leading-tight">
             “{content.daily_quote}”
           </blockquote>
 
         </section>
-
       )}
 
       {/* REFLEXIÓN */}
 
       {content.reflection && (
-
         <SectionCard title="REFLEXIÓN">
-
           {content.reflection}
-
         </SectionCard>
-
       )}
-            {/* TU MISIÓN */}
+
+      {/* TU MISIÓN */}
 
       {content.mission && (
-
         <section className="kairos-card-gold mt-8 p-8">
 
           <p className="text-xs uppercase tracking-[0.35em] text-[var(--gold)]">
@@ -223,7 +198,6 @@ async function finishDay() {
           </p>
 
         </section>
-
       )}
 
       {/* JOURNAL */}
@@ -237,7 +211,6 @@ async function finishDay() {
         <div className="kairos-divider my-6" />
 
         {content.journal_prompt && (
-
           <div className="mb-6 rounded-2xl border border-[#D8B56B]/20 bg-[#151E2C] p-5">
 
             <p className="text-sm uppercase tracking-[0.25em] text-[var(--gold)]">
@@ -249,7 +222,6 @@ async function finishDay() {
             </p>
 
           </div>
-
         )}
 
         <textarea
@@ -262,7 +234,6 @@ async function finishDay() {
       {/* CELEBRACIÓN */}
 
       {content.celebration && (
-
         <section className="kairos-card mt-8 p-8">
 
           <p className="text-xs uppercase tracking-[0.35em] text-[var(--gold)]">
@@ -276,7 +247,6 @@ async function finishDay() {
           </p>
 
         </section>
-
       )}
 
       {/* CTA */}
