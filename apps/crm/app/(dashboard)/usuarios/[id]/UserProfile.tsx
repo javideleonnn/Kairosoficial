@@ -1,6 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+
 import {
   updateUserAction,
   sendPasswordResetAction,
@@ -17,12 +19,10 @@ interface Props {
   user: User;
 }
 
-export default function UserProfile({
-  user,
-}: Props) {
+export default function UserProfile({ user }: Props) {
+  const router = useRouter();
 
-  const [pending, startTransition] =
-    useTransition();
+  const [pending, startTransition] = useTransition();
 
   const [form, setForm] = useState({
     full_name: user.full_name,
@@ -30,10 +30,7 @@ export default function UserProfile({
   });
 
   const handleSave = () => {
-    if (
-      !form.full_name.trim() ||
-      !form.email.trim()
-    ) {
+    if (!form.full_name.trim() || !form.email.trim()) {
       alert("Completa todos los campos.");
       return;
     }
@@ -50,15 +47,57 @@ export default function UserProfile({
         alert("Usuario actualizado correctamente.");
       } catch (error) {
         console.error(error);
-
         alert("No fue posible actualizar el usuario.");
       }
     });
   };
 
-  return (
-    <div className="rounded-2xl border border-white/10 bg-zinc-950 p-6">
+  const handlePasswordReset = () => {
+    if (
+      !confirm(
+        `¿Enviar un correo de recuperación a ${user.email}?`
+      )
+    ) {
+      return;
+    }
 
+    startTransition(async () => {
+      try {
+        await sendPasswordResetAction(user.email);
+
+        alert("Correo de recuperación enviado.");
+      } catch (error) {
+        console.error(error);
+
+        alert("No fue posible enviar el correo de recuperación.");
+      }
+    });
+  };
+
+  const handleRemoveUser = () => {
+    if (
+      !confirm(
+        "¿Eliminar este usuario permanentemente?"
+      )
+    ) {
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        await removeUserAction(user.id);
+
+        window.location.href = "/usuarios";
+      } catch (error) {
+        console.error(error);
+
+        alert("No fue posible eliminar el usuario.");
+      }
+    });
+  };
+
+  return (
+    <div>
       <div className="mb-6">
         <h2 className="text-2xl font-bold">
           Información del usuario
@@ -94,6 +133,7 @@ export default function UserProfile({
           </label>
 
           <input
+            type="email"
             value={form.email}
             onChange={(e) =>
               setForm((prev) => ({
@@ -107,7 +147,7 @@ export default function UserProfile({
 
       </div>
 
-      <div className="mt-8 flex justify-between"> 
+      <div className="mt-8 flex flex-wrap gap-3">
 
         <button
           type="button"
@@ -115,53 +155,28 @@ export default function UserProfile({
           disabled={pending}
           className="rounded-xl bg-white px-6 py-3 font-semibold text-black transition disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {pending
-            ? "Guardando..."
-            : "Guardar cambios"}
+          {pending ? "Guardando..." : "Guardar cambios"}
         </button>
+
         <button
-  disabled={pending}
-  onClick={() => {
-    if (
-      !confirm(
-        `¿Enviar un correo de recuperación a ${user.email}?`
-      )
-    )
-      return;
+          type="button"
+          disabled={pending}
+          onClick={handlePasswordReset}
+          className="rounded-xl border border-blue-500/30 px-6 py-3 font-semibold text-blue-400 transition hover:bg-blue-500/10 disabled:opacity-50"
+        >
+          Restablecer contraseña
+        </button>
 
-    startTransition(async () => {
-      await sendPasswordResetAction(user.email);
-
-      alert("Correo de recuperación enviado.");
-    });
-  }}
-  className="rounded-xl border border-blue-500/30 px-6 py-3 font-semibold text-blue-400 transition hover:bg-blue-500/10 disabled:opacity-50"
->
-  Restablecer contraseña
-</button>
         <button
-  disabled={pending}
-  onClick={() => {
-    if (
-      !confirm(
-        "¿Eliminar este usuario permanentemente?"
-      )
-    )
-      return;
-
-    startTransition(async () => {
-      await removeUserAction(user.id);
-
-      window.location.href = "/usuarios";
-    });
-  }}
-  className="rounded-xl border border-red-500/30 px-6 py-3 font-semibold text-red-400 transition hover:bg-red-500/10 disabled:opacity-50"
->
-  Eliminar usuario
-</button>
+          type="button"
+          disabled={pending}
+          onClick={handleRemoveUser}
+          className="rounded-xl border border-red-500/30 px-6 py-3 font-semibold text-red-400 transition hover:bg-red-500/10 disabled:opacity-50"
+        >
+          Eliminar usuario
+        </button>
 
       </div>
-
     </div>
   );
 }
