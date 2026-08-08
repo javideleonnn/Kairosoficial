@@ -22,38 +22,58 @@ export interface StudentData {
 export async function fetchStudent(
   email: string,
 ): Promise<StudentData | null> {
-  const supabase = await createClient();
+  const supabase: any = await createClient();
 
-  const { data: profile } = await supabase
+  // PROFILE
+  const { data: profileData, error: profileError } = await supabase
     .from("profiles")
-    .select("id,full_name,email")
+    .select("id, full_name, email")
     .eq("email", email)
     .maybeSingle();
 
-  if (!profile) {
-    throw new Error(`No existe un profile para: ${email}`);
+  if (profileError) {
+    console.error("fetchStudent profile error:", profileError);
+    return null;
   }
 
-  const profileRow = profile as any;
+  if (!profileData) {
+    return null;
+  }
 
-  const { data: userProgram } = await supabase
-    .from("user_programs")
-    .select(`
-      id,
-      current_day,
-      route_id,
-      program:programs(
+  const profile = profileData as {
+    id: string;
+    full_name: string | null;
+    email: string | null;
+  };
+
+  // ACTIVE PROGRAM
+  const { data: userProgramData, error: userProgramError } =
+    await supabase
+      .from("user_programs")
+      .select(`
         id,
-        name
-      )
-    `)
-    .eq("user_id", profileRow.id)
-    .eq("active", true)
-    .maybeSingle();
+        current_day,
+        route_id,
+        program:programs(
+          id,
+          name
+        )
+      `)
+      .eq("user_id", profile.id)
+      .eq("active", true)
+      .maybeSingle();
 
-  if (!userProgram) {
+  if (userProgramError) {
+    console.error(
+      "fetchStudent userProgram error:",
+      userProgramError,
+    );
+  }
+
+  if (!userProgramData) {
     return {
-      profileId: profileRow.id,
+      profileId: profile.id,
+
       userProgramId: null,
       routeId: null,
 
@@ -68,58 +88,86 @@ export async function fetchStudent(
     };
   }
 
-  const { data: progressRows } = await supabase
-    .from("user_day_progress")
-    .select(`
-      completed,
-      day:route_day_content!day_id(
-        day_number
-      )
-    `)
-    .eq("user_program_id", userProgram.id)
-    .eq("completed", true);
+  const userProgram = userProgramData as any;
 
-  const completedDays =
-    progressRows?.flatMap((row: any) => {
-      if (!row.day) return [];
-      return [row.day.day_number];
-    }) ?? [];
+  // COMPLETED DAYS
+  const { data: progressData, error: progressError } =
+    await supabase
+      .from("user_day_progress")
+      .select(`
+        completed,
+        day:route_day_content!day_id(
+          day_number
+        )
+      `)
+      .eq("user_program_id", userProgram.id)
+      .eq("completed", true);
 
-  const { count } = await supabase
-    .from("route_day_content")
-    .select("*", {
-      count: "exact",
-      head: true,
-    })
-    .eq("program_id", (userProgram.program as any)?.id);
+  if (progressError) {
+    console.error(
+      "fetchStudent progress error:",
+      progressError,
+    );
+  }
 
-  const totalDays = count ?? 21;
+  const completedDays: number[] =
+    (progressData ?? [])
+      .map((row: any) => row?.day?.day_number)
+      .filter(
+        (day: unknown): day is number =>
+          typeof day === "number",
+      );
+
+  // TOTAL DAYS
+  const programId =
+    userProgram?.program?.id ?? null;
+
+  let totalDays = 21;
+
+  if (programId) {
+    const { count, error: daysError } = await supabase
+      .from("route_day_content")
+      .select("*", {
+        count: "exact",
+        head: true,
+      })
+      .eq("program_id", programId);
+
+    if (!daysError && typeof count === "number") {
+      totalDays = count;
+    }
+  }
+
+  const progress =
+    totalDays > 0
+      ? Math.round(
+          (completedDays.length / totalDays) * 100,
+        )
+      : 0;
 
   return {
-    profileId: profileRow.id,
+    profileId: profile.id,
 
     userProgramId: userProgram.id,
-    routeId: userProgram.route_id,
+    routeId: userProgram.route_id ?? null,
 
     fullName: profile.full_name,
     email: profile.email,
 
     program: userProgram.program
       ? {
-          id: (userProgram.program as any).id,
-          name: (userProgram.program as any).name,
+          id: String(userProgram.program.id),
+          name: String(userProgram.program.name),
         }
       : null,
 
-    currentDay: userProgram.current_day,
+    currentDay:
+      typeof userProgram.current_day === "number"
+        ? userProgram.current_day
+        : 1,
 
     completedDays,
 
-    progress:
-      totalDays === 0
-        ? 0
-        : Math.round(
-            (completedDays.length / totalDays) * 100,
-          ),
+    progress,
   };
 }
