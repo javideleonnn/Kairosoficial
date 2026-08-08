@@ -54,16 +54,22 @@ export default async function DayPage({
     redirect("/dashboard");
   }
 
-  async function finishDay() {
-    "use server";
+  const userProgramId = student.userProgramId;
 
-    await completeDay(
-      student.userProgramId!,
-      content.id,
-    );
+async function finishDay() {
+  "use server";
 
+  if (!userProgramId) {
     redirect("/dashboard");
   }
+
+  await completeDay(
+    userProgramId,
+    content.id,
+  );
+
+  redirect("/dashboard");
+}
 
   const embed =
     content.video_url &&
