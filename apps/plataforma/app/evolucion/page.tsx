@@ -140,7 +140,7 @@ const days = Array.from(
       </span>
     </div>
   );
-})}
+})} 
         </div>
 
       </section>
