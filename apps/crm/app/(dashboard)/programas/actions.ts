@@ -1,4 +1,4 @@
-        "use server";
+"use server";
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -33,7 +33,7 @@ export async function updateDayContent(
 ) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("route_day_content")
     .update({
       title: input.title,
@@ -56,7 +56,7 @@ export async function updateDayContent(
       secondary_pillar: input.secondary_pillar,
       secondary_points: input.secondary_points,
 
-      is_published: input.is_published, 
+      is_published: input.is_published,
     })
     .eq("id", input.id);
 
