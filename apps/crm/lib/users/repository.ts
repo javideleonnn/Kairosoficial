@@ -303,13 +303,13 @@ export async function createUser(data: {
   const supabase: any = await createClient();
 
   const { error: profileError } = await supabase
-    .from("profiles")
-    .insert({
-      id: authData.user.id,
-      full_name: data.full_name,
-      email: data.email,
-    });
-
+  .from("profiles")
+  .insert({
+    id: authData.user.id,
+    auth_user_id: authData.user.id,
+    full_name: data.full_name,
+    email: data.email,
+  });
   if (profileError) {
     throw profileError;
   }
