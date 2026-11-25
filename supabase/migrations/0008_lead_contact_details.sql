@@ -1,6 +1,5 @@
 
 alter table public.leads
-  add column full_name text,
   add column phone_country_code text,
   add column phone_number text;
 
