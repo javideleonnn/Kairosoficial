@@ -1,30 +1,45 @@
+
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { buildFlowSteps, countAnsweredQuestions, totalQuestions } from "@/lib/diagnostic/flow";
+import {
+  buildFlowSteps,
+  countAnsweredQuestions,
+  totalQuestions,
+} from "@/lib/diagnostic/flow";
 import type { DraftAnswer } from "@/lib/diagnostic/flow";
 import { IntroScreen } from "./IntroScreen";
 import { TransitionScreen } from "./TransitionScreen";
 import { QuestionScreen } from "./QuestionScreen";
+import { ContactCapture } from "./ContactCapture";
 import { Entrance } from "./Entrance";
 import { AtmosphericBackground } from "@/components/AtmosphericBackground";
 
-type Phase = "intro" | "flow" | "submitting" | "error";
+type Phase =
+  | "intro"
+  | "flow"
+  | "submitting"
+  | "contact"
+  | "error";
 
-/**
- * Orquestador del diagnóstico. La lógica de navegación (buildFlowSteps,
- * qué paso sigue, cuándo se envía) es la misma de siempre — se agregó
- * únicamente `goBack()`, porque la Imagen 3/4/5 muestra una flecha atrás
- * funcional en cada pregunta (no existía antes).
- */
+interface ContactData {
+  fullName: string;
+  countryCode: string;
+  phoneNumber: string;
+}
+
 export function DiagnosticFlow(): React.JSX.Element {
   const router = useRouter();
   const steps = useMemo(() => buildFlowSteps(), []);
+
   const [phase, setPhase] = useState<Phase>("intro");
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, DraftAnswer>>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isSavingContact, setIsSavingContact] = useState(false);
+
   const startedAtRef = useRef<number | null>(null);
   const manychatSubscriberIdRef = useRef<string | null>(null);
 
@@ -51,20 +66,68 @@ export function DiagnosticFlow(): React.JSX.Element {
           answers: Object.values(answers),
           startedAt: new Date(startedAt).toISOString(),
           durationSeconds,
-          manychatSubscriberId: manychatSubscriberIdRef.current ?? undefined,
+          manychatSubscriberId:
+            manychatSubscriberIdRef.current ?? undefined,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error ?? "Error desconocido al guardar el diagnóstico.");
+        throw new Error(
+          data.error ?? "No se pudo guardar el diagnóstico.",
+        );
       }
 
-      router.push(`/resultado/${data.sessionId}`);
+      if (!data.sessionId) {
+        throw new Error("No se recibió el identificador del diagnóstico.");
+      }
+
+      setSessionId(data.sessionId);
+      setPhase("contact");
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Error de red.");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Error de conexión.",
+      );
       setPhase("error");
+    }
+  }
+
+  async function saveContact(contact: ContactData) {
+    if (!sessionId || isSavingContact) return;
+
+    setIsSavingContact(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/diagnostic/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          fullName: contact.fullName,
+          countryCode: contact.countryCode,
+          phoneNumber: contact.phoneNumber,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ?? "No se pudieron guardar tus datos.",
+        );
+      }
+
+      router.push(`/resultado/${sessionId}`);
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Error de conexión. Inténtalo nuevamente.",
+      );
+    } finally {
+      setIsSavingContact(false);
     }
   }
 
@@ -73,6 +136,7 @@ export function DiagnosticFlow(): React.JSX.Element {
       void submitDiagnostic();
       return;
     }
+
     setStepIndex((i) => i + 1);
   }
 
@@ -81,6 +145,7 @@ export function DiagnosticFlow(): React.JSX.Element {
       setPhase("intro");
       return;
     }
+
     setStepIndex((i) => Math.max(0, i - 1));
   }
 
@@ -100,7 +165,9 @@ export function DiagnosticFlow(): React.JSX.Element {
       <div className="flex min-h-screen items-center justify-center text-foreground">
         <AtmosphericBackground />
         <Entrance>
-          <p className="font-serif text-lg">Guardando tu diagnóstico...</p>
+          <p className="font-serif text-lg">
+            Guardando tu diagnóstico...
+          </p>
         </Entrance>
       </div>
     );
@@ -124,20 +191,59 @@ export function DiagnosticFlow(): React.JSX.Element {
     );
   }
 
+  if (phase === "contact") {
+    return (
+      <div className="relative min-h-screen">
+        <AtmosphericBackground />
+
+        <div className="relative z-10">
+          {errorMessage && (
+            <div className="mx-auto max-w-xl px-6 pt-8">
+              <p
+                role="alert"
+                className="text-center text-sm text-amber-400"
+              >
+                {errorMessage}
+              </p>
+            </div>
+          )}
+
+          <div
+            className={
+              isSavingContact
+                ? "pointer-events-none opacity-60"
+                : ""
+            }
+            aria-busy={isSavingContact}
+          >
+            <ContactCapture onSubmit={saveContact} />
+          </div>
+
+          {isSavingContact && (
+            <p className="pb-8 text-center text-sm text-foreground/60">
+              Guardando tus datos...
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const currentStep = steps[stepIndex];
 
-  // Número de pregunta (1-indexado, solo cuenta pasos "question", igual
-  // que muestra la referencia — "6 / 12", no la posición entre los 14
-  // pasos totales incluyendo transiciones).
-  const questionNumber =
-    steps.slice(0, stepIndex + 1).filter((s) => s.kind === "question").length;
+  const questionNumber = steps
+    .slice(0, stepIndex + 1)
+    .filter((s) => s.kind === "question").length;
 
   return (
     <div className="relative">
       <AtmosphericBackground />
+
       {!currentStep ? (
         <div className="flex min-h-screen items-center justify-center px-6 text-foreground">
-          <p className="text-sm text-foreground/60">Algo salió mal. Recarga la página.</p>
+          <p className="text-sm text-foreground/60">
+            Algo salió mal. Recarga la página.
+          </p>
         </div>
       ) : currentStep.kind === "transition" ? (
         <TransitionScreen
@@ -151,7 +257,12 @@ export function DiagnosticFlow(): React.JSX.Element {
           key={currentStep.question.id}
           question={currentStep.question}
           answer={answers[currentStep.question.id]}
-          onAnswerChange={(answer) => setAnswers((prev) => ({ ...prev, [answer.questionId]: answer }))}
+          onAnswerChange={(answer) =>
+            setAnswers((prev) => ({
+              ...prev,
+              [answer.questionId]: answer,
+            }))
+          }
           onContinue={advance}
           onBack={goBack}
           questionNumber={questionNumber}
