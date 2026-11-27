@@ -431,7 +431,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
-          auth_user_id?: string
+          auth_user_id?: string | null
           created_at?: string
           email?: string
           full_name?: string
@@ -638,7 +638,7 @@ export type Database = {
         Update: {
           completed?: boolean
           completed_at?: string | null
-          created_at?: string
+          created_at?: string | null
           day_id?: string
           id?: string
           minutes_watched?: number | null
@@ -931,7 +931,7 @@ export type CompositeTypes<
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicSchemaNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
@@ -944,5 +944,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
 
