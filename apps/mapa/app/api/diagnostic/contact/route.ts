@@ -1,0 +1,85 @@
+import { NextResponse } from "next/server";
+import { createSupabaseServiceRoleClient } from "@kairos/database";
+
+interface ContactPayload {
+  sessionId: string;
+  fullName: string;
+  countryCode: string;
+  phoneNumber: string;
+}
+
+export async function POST(request: Request): Promise<NextResponse> {
+  let payload: ContactPayload;
+
+  try {
+    payload = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "La solicitud no es válida." },
+      { status: 400 },
+    );
+  }
+
+  const sessionId = payload.sessionId?.trim();
+  const fullName = payload.fullName?.trim();
+  const countryCode = payload.countryCode?.trim();
+  const phoneNumber = payload.phoneNumber?.replace(/\D/g, "");
+
+  if (!sessionId || !/^[0-9a-f-]{36}$/i.test(sessionId)) {
+    return NextResponse.json(
+      { error: "La sesión del diagnóstico no es válida." },
+      { status: 400 },
+    );
+  }
+
+  if (!fullName || fullName.length > 120) {
+    return NextResponse.json(
+      { error: "Escribe tu nombre completo." },
+      { status: 400 },
+    );
+  }
+
+  if (!/^\+\d{1,4}$/.test(countryCode ?? "")) {
+    return NextResponse.json(
+      { error: "Selecciona un código de país válido." },
+      { status: 400 },
+    );
+  }
+
+  if (!phoneNumber || phoneNumber.length < 6 || phoneNumber.length > 15) {
+    return NextResponse.json(
+      { error: "Escribe un número de teléfono válido." },
+      { status: 400 },
+    );
+  }
+
+  const supabase = createSupabaseServiceRoleClient();
+
+  const { data, error } = await supabase
+    .from("leads")
+    .update({
+      full_name: fullName,
+      phone_country_code: countryCode,
+      phone_number: phoneNumber,
+    })
+    .eq("diagnostic_session_id", sessionId)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json(
+      { error: "No se pudieron guardar tus datos. Inténtalo nuevamente." },
+      { status: 500 },
+    );
+  }
+
+  if (!data) {
+    return NextResponse.json(
+      { error: "No encontramos el registro de este diagnóstico." },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({ success: true });
+}
+ listo
