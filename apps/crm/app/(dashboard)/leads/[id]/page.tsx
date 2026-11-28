@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { RadarChart, DimensionBar, type RadarDatum } from "@kairos/ui";
 import { BLOCK_NAMES } from "@kairos/scoring-engine";
@@ -45,6 +46,15 @@ export default async function LeadDetailPage({
 
   const { result } = lead;
 
+  const whatsappNumber =
+    lead.phoneCountryCode && lead.phoneNumber
+      ? `${lead.phoneCountryCode}${lead.phoneNumber}`.replace(/\D/g, "")
+      : null;
+
+  const whatsappUrl = whatsappNumber
+    ? `https://wa.me/${whatsappNumber}`
+    : null;
+
   const radarData: RadarDatum[] = (
     Object.keys(result.blockScores) as BlockKey[]
   ).map((key) => ({
@@ -78,6 +88,60 @@ export default async function LeadDetailPage({
           {new Date(lead.createdAt).toLocaleDateString("es")}
         </p>
       </div>
+
+      <section className="space-y-4 rounded-xl border border-foreground/10 p-5">
+        <h2 className="text-xs uppercase tracking-widest text-foreground/40">
+          Información de contacto
+        </h2>
+
+        <div className="space-y-1">
+          <p className="text-xs text-foreground/40">Nombre completo</p>
+          <p className="text-sm text-foreground/80">
+            {lead.fullName ?? "No proporcionado"}
+          </p>
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-xs text-foreground/40">WhatsApp</p>
+
+          {whatsappNumber ? (
+            <>
+              <p className="text-sm text-foreground/80">
+                {lead.phoneCountryCode} {lead.phoneNumber}
+              </p>
+
+              <a
+                href={whatsappUrl!}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
+              >
+                Abrir conversación en WhatsApp ↗
+              </a>
+            </>
+          ) : (
+            <p className="text-sm text-foreground/40">
+              No proporcionado
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-xs text-foreground/40">Correo electrónico</p>
+          <p className="text-sm text-foreground/80">
+            {lead.email ?? "No proporcionado"}
+          </p>
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-xs text-foreground/40">Instagram</p>
+          <p className="text-sm text-foreground/80">
+            {lead.instagramUsername
+              ? `@${lead.instagramUsername}`
+              : "No proporcionado"}
+          </p>
+        </div>
+      </section>
 
       <div className="text-center">
         <p className="text-xs uppercase tracking-widest text-foreground/40">
