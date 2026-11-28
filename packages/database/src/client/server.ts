@@ -1,5 +1,6 @@
+
 import { createServerClient, type CookieMethodsServer } from "@supabase/ssr";
-import type { Database } from "../types/database.types";
+import type { Database } from "../database.types";
 
 export function createSupabaseServerClient(cookies: CookieMethodsServer) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
